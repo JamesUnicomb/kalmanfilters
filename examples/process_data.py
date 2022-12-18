@@ -58,6 +58,4 @@ for i in range(3):
         color='C0'
     )
 
-
-
 plt.show()
