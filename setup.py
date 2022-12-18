@@ -5,8 +5,11 @@ __version__ = "0.0.1"
 
 ext_modules = [
     Pybind11Extension("kalmanfilters",
-        ["main.cpp"],
-        include_dirs = ["extern"],
+        [
+            "main.cpp",
+            "src/extended_kalman_filter/ConstantStateExtendedKalmanFIlter.cpp"
+        ],
+        include_dirs = ["extern", "src"],
         define_macros = [('VERSION_INFO', __version__)],
         ),
 ]
