@@ -5,7 +5,7 @@
 
 namespace linalg
 {
-void zero(std::vector<double>& a, int n1)
+void setzero(std::vector<double>& a, int n1)
 {
 	int i;
 	for(i = 0; i < n1; i++)
@@ -14,7 +14,7 @@ void zero(std::vector<double>& a, int n1)
 	}
 }
 
-void zero(std::vector<std::vector<double>>& a, int n1, int n2)
+void setzero(std::vector<std::vector<double>>& a, int n1, int n2)
 {
 	int i, j;
 	for(i = 0; i < n1; i++)

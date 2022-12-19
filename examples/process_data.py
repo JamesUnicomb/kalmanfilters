@@ -1,10 +1,9 @@
-import serial
 import numpy as np
 import matplotlib.pyplot as plt
 
 import kalmanfilters
 
-kf = kalmanfilters.ConstantStateExtendedKalmanFilter(0.5, 0.5)
+kf = kalmanfilters.ConstantStateExtendedKalmanFilter(2.5, 1.0)
 
 microsprev = 0.0
 
@@ -46,11 +45,12 @@ acc = np.array(acc)
 accp = np.array(accp)
 accpunc = np.array(accpunc)
 
+fig, ax = plt.subplots(3,1)
+
 for i in range(3):
-    plt.subplot(311+i)
-    plt.scatter(t, acc[:,i])
-    plt.plot(t, accp[:,i])
-    plt.fill_between(
+    ax[i].scatter(t, acc[:,i])
+    ax[i].plot(t, accp[:,i])
+    ax[i].fill_between(
         t,
         accp[:,i] - 2.0 * np.sqrt(accpunc[:,i,i]),
         accp[:,i] + 2.0 * np.sqrt(accpunc[:,i,i]),

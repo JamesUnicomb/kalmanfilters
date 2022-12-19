@@ -1,4 +1,5 @@
 import serial
+from serial.serialutil import SerialException
 import kalmanfilters
 
 ser = serial.Serial('/dev/tty.usbmodem205E3072594D1', 9600)
@@ -27,10 +28,10 @@ while True:
         kf.predict(dt)
         kf.update([ax, ay, az])
 
-        print(kf.state, kf.state_unc)
+        print(kf.state, kf.state_unc, end='\r')
 
-        
-    except KeyboardInterrupt as e:
+    except (KeyboardInterrupt, SerialException) as e:
+        print(e)
         break
     except Exception as e:
         print(e)

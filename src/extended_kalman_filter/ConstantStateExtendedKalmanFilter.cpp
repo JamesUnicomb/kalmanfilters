@@ -2,6 +2,7 @@
 #include "linalg/linalg.hpp"
 
 using namespace std;
+using namespace linalg;
 
 void ConstantStateExtendedKalmanFilter::update(const vector<double>& accel)
 {
@@ -27,35 +28,35 @@ void ConstantStateExtendedKalmanFilter::update(const vector<double>& accel)
     dh[2][0] = -sr * cp * g;
     dh[2][1] = -cr * sp * g;
 
-    linalg::transpose(dh, dhT, 3, 2);
-    linalg::zero(dhS, 3, 2);
-    linalg::matmult(dh, state_unc, dhS, 3, 2, 2);
-    linalg::zero(innovation_unc, 3, 3);
-    linalg::matmult(dhS, dhT, innovation_unc, 3, 2, 3);
+    transpose(dh, dhT, 3, 2);
+    setzero(dhS, 3, 2);
+    matmult(dh, state_unc, dhS, 3, 2, 2);
+    setzero(innovation_unc, 3, 3);
+    matmult(dhS, dhT, innovation_unc, 3, 2, 3);
     for (int i = 0; i < 3; i++) {
         innovation_unc[i][i] += measurement_unc;
     }
 
     // calculate kalman gain
-    linalg::inv33(innovation_unc, innovation_unc_inv);
-    linalg::zero(dhTSinv, 2, 3);
-    linalg::matmult(dhT, innovation_unc_inv, dhTSinv, 2, 3, 3);
-    linalg::zero(gain, 2, 3);
-    linalg::matmult(state_unc, dhTSinv, gain, 2, 2, 3);
+    inv33(innovation_unc, innovation_unc_inv);
+    setzero(dhTSinv, 2, 3);
+    matmult(dhT, innovation_unc_inv, dhTSinv, 2, 3, 3);
+    setzero(gain, 2, 3);
+    matmult(state_unc, dhTSinv, gain, 2, 2, 3);
 
     // update
-    linalg::zero(dx, 3);
-    linalg::matvecmult(gain, innovation, dx, 2, 3);
+    setzero(dx, 3);
+    matvecmult(gain, innovation, dx, 2, 3);
     for (int i = 0; i < 2; i++) {
         state[i] += dx[i];
     }
 
-    linalg::zero(khtmp, 2, 2);
-    linalg::matmult(gain, dh, khtmp, 2, 3, 2);
-    linalg::matsubtract(eye, khtmp, khtmp, 2, 2);
-    linalg::matcopy(state_unc, tmpunc, 2, 2);
-    linalg::zero(state_unc, 2, 2);
-    linalg::matmult(khtmp, tmpunc, state_unc, 2, 2, 2);
+    setzero(khtmp, 2, 2);
+    matmult(gain, dh, khtmp, 2, 3, 2);
+    matsubtract(eye, khtmp, khtmp, 2, 2);
+    matcopy(state_unc, tmpunc, 2, 2);
+    setzero(state_unc, 2, 2);
+    matmult(khtmp, tmpunc, state_unc, 2, 2, 2);
 }
 
 void ConstantStateExtendedKalmanFilter::predict(double dt)

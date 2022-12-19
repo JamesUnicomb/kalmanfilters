@@ -23,28 +23,31 @@ public:
 		, measurement_unc(measurement_unc)
 	{
 		// state is 2x1 and sigma is 2x2
-		state = {0.0, 0.0};
-		state_unc = {{1.0, 0.0}, {0.0, 1.0}};
+		state = std::vector<double>(statedim, 0.0);
+		state_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
+        state_unc[0][0] = state_unc[1][1] = 1.0;
 
 		// innovation is 3x1
-		innovation = {0.0, 0.0, 0.0};
-        innovation_unc = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        innovation_unc_inv = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+		innovation = std::vector<double>(measuredim, 0.0);
+        innovation_unc = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
+        innovation_unc_inv = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
 
         // fill tmp matrices
-        dh = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
-        dhS = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
-        dhT = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
-        dhTSinv = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        dh = std::vector<std::vector<double>>(measuredim, std::vector<double>(statedim, 0.0));
+        dhS = std::vector<std::vector<double>>(measuredim, std::vector<double>(statedim, 0.0));
+        dhT = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
+        dhTSinv = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
 
         // kalman gain is 2x3
-        gain = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+        gain = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
 
         // update variables
-        dx = {0.0, 0.0};
-        eye = {{1.0, 0.0}, {0.0, 1.0}};
-        khtmp = {{0.0, 0.0}, {0.0, 0.0}};
-        tmpunc = {{0.0, 0.0}, {0.0, 0.0}};
+        dx = std::vector<double>(statedim, 0.0);
+        eye = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
+        eye[0][0] = eye[1][1] = 1.0;
+
+        khtmp = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
+        tmpunc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
 	}
 
 	void update(const std::vector<double>& accel);
@@ -56,6 +59,8 @@ public:
     std::vector<std::vector<double>> eye, khtmp, tmpunc;
 private:
     const double g = 9.81;
+    const int statedim = 2;
+    const int measuredim = 3;
     // temp matrices for calculations
 };
 
