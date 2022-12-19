@@ -7,6 +7,7 @@ ext_modules = [
     Pybind11Extension("kalmanfilters",
         [
             "main.cpp",
+            "src/linalg/linalg.cpp",
             "src/extended_kalman_filter/ConstantStateExtendedKalmanFIlter.cpp"
         ],
         include_dirs = ["extern", "src"],
