@@ -5,7 +5,6 @@
 #include "nr3.hpp"
 #include "extended_kalman_filter/ConstantStateExtendedKalmanFilter.hpp"
 
-
 // clang-format off
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)

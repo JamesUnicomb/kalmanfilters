@@ -2,6 +2,8 @@
 #define _LINALG_HPP_
 
 #include <vector>
+#include <exception>
+#include <cmath>
 
 namespace linalg
 {
@@ -54,7 +56,7 @@ void transpose(std::vector<std::vector<double>>& a, std::vector<std::vector<doub
 	}
 }
 
-void matvecmult(
+void matvecmultacc(
 	std::vector<std::vector<double>>& a, std::vector<double>& b, std::vector<double>& c, int n1, int n2)
 {
 	// a is n1 x n2
@@ -70,7 +72,17 @@ void matvecmult(
 	}
 }
 
-void matmult(
+void matvecmult(
+	std::vector<std::vector<double>>& a, std::vector<double>& b, std::vector<double>& c, int n1, int n2)
+{
+	// a is n1 x n2
+	// b is n2
+	// c is n1
+	setzero(c, n1);
+	matvecmultacc(a, b, c, n1, n2);
+}
+
+void matmultacc(
 	std::vector<std::vector<double>>& a,
 	std::vector<std::vector<double>>& b,
 	std::vector<std::vector<double>>& c,
@@ -94,6 +106,21 @@ void matmult(
 	}
 }
 
+void matmult(
+	std::vector<std::vector<double>>& a,
+	std::vector<std::vector<double>>& b,
+	std::vector<std::vector<double>>& c,
+	int n1,
+	int n2,
+	int n3)
+{
+	// a is n1 x n2
+	// b is n2 x n3
+	// c is n1 x n3
+	setzero(c, n1, n3);
+	matmultacc(a, b, c, n1, n2, n3);
+}
+
 void matsubtract(
 	std::vector<std::vector<double>>& a,
 	std::vector<std::vector<double>>& b,
@@ -101,7 +128,7 @@ void matsubtract(
 	int n1,
 	int n2)
 {
-    // a is n1 x n2
+	// a is n1 x n2
 	// b is n1 x n2
 	// c is n1 x n2
 	int i, j;
@@ -114,24 +141,71 @@ void matsubtract(
 	}
 }
 
-void inv33(std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b)
+struct cholesky
 {
-	double det = a[0][0] * (a[1][1] * a[2][2] - a[2][1] * a[1][2]) -
-				 a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0]) +
-				 a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0]);
+	int n;
+	std::vector<std::vector<double>> el;
 
-	double invdet = 1.0 / det;
+	cholesky(int n)
+		: n(n)
+	{
+		el = std::vector<std::vector<double>>(n, std::vector<double>(n, 0.0));
+	}
 
-	b[0][0] = (a[1][1] * a[2][2] - a[2][1] * a[1][2]) * invdet;
-	b[0][1] = (a[0][2] * a[2][1] - a[0][1] * a[2][2]) * invdet;
-	b[0][2] = (a[0][1] * a[1][2] - a[0][2] * a[1][1]) * invdet;
-	b[1][0] = (a[1][2] * a[2][0] - a[1][0] * a[2][2]) * invdet;
-	b[1][1] = (a[0][0] * a[2][2] - a[0][2] * a[2][0]) * invdet;
-	b[1][2] = (a[1][0] * a[0][2] - a[0][0] * a[1][2]) * invdet;
-	b[2][0] = (a[1][0] * a[2][1] - a[2][0] * a[1][1]) * invdet;
-	b[2][1] = (a[2][0] * a[0][1] - a[0][0] * a[2][1]) * invdet;
-	b[2][2] = (a[0][0] * a[1][1] - a[1][0] * a[0][1]) * invdet;
-}
+	cholesky(std::vector<std::vector<double>>& a)
+		: el(a)
+		, n(a.size())
+	{
+		dcmp(a);
+	}
+
+	void inverse(std::vector<std::vector<double>>& ainv)
+	{
+		int i, j, k;
+		double sum;
+		for(i = 0; i < n; i++)
+			for(j = 0; j <= i; j++)
+			{
+				sum = (i == j ? 1. : 0.0);
+				for(k = i - 1; k >= j; k--)
+					sum -= el[i][k] * ainv[j][k];
+				ainv[j][i] = sum / el[i][i];
+			}
+		for(i = n - 1; i >= 0; i--)
+			for(j = 0; j <= i; j++)
+			{
+				sum = (i < j ? 0.0 : ainv[j][i]);
+				for(k = i + 1; k < n; k++)
+					sum -= el[k][i] * ainv[j][k];
+				ainv[i][j] = ainv[j][i] = sum / el[i][i];
+			}
+	}
+
+	void dcmp(std::vector<std::vector<double>>& a)
+	{
+		int i, j, k;
+		double sum;
+		for(i = 0; i < n; i++)
+		{
+			for(j = i; j < n; j++)
+			{
+				for(sum = el[i][j], k = i - 1; k >= 0; k--)
+					sum -= el[i][k] * el[j][k];
+				if(i == j)
+				{
+					if(sum <= 0.0)
+						throw std::runtime_error("Cholesky failed");
+					el[i][i] = sqrt(sum);
+				}
+				else
+					el[j][i] = sum / el[i][i];
+			}
+		}
+		for(i = 0; i < n; i++)
+			for(j = 0; j < i; j++)
+				el[j][i] = 0.;
+	}
+};
 }; // namespace linalg
 
 #endif /* _LINALG_HPP_ */

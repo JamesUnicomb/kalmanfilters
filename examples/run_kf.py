@@ -14,7 +14,7 @@ while True:
         ser_bytes = ser.readline()
         decoded_bytes = ser_bytes.decode("utf-8")
         
-        micros, ax, ay, az, gx, gy, gz = decoded_bytes.rstrip().split(",")
+        micros, ax, ay, az, gx, gy, gz, mx, my, mz = decoded_bytes.rstrip().split(",")
         
         micros = int(micros)
         ax = float(ax)

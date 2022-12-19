@@ -14,7 +14,7 @@ accpunc = []
 
 with open("examples/data.txt", "r") as f:
     for r in f.readlines()[1:]:
-        micros, ax, ay, az, gx, gy, gz = r.rstrip().split(",")
+        micros, ax, ay, az, gx, gy, gz, mx, my, mz = r.rstrip().split(",")
         
         micros = int(micros)
         ax = float(ax)
