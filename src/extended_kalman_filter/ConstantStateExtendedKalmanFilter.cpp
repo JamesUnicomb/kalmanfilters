@@ -4,6 +4,37 @@
 using namespace std;
 using namespace linalg;
 
+ConstantStateExtendedKalmanFilter::ConstantStateExtendedKalmanFilter(
+	double process_unc, double measurement_unc)
+	: process_unc(process_unc)
+	, measurement_unc(measurement_unc)
+{
+	// state is 2x1 and sigma is 2x2
+	state = std::vector<double>(statedim, 0.0);
+	state_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
+	state_unc[0][0] = state_unc[1][1] = 1.0;
+
+	// innovation is 3x1
+	innovation = std::vector<double>(measuredim, 0.0);
+	innovation_unc = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
+	innovation_unc_inv = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
+
+	// fill tmp matrices
+	jac = std::vector<std::vector<double>>(measuredim, std::vector<double>(statedim, 0.0));
+	jacT = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
+
+	// kalman gain is 2x3
+	gain = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
+
+	// update variables
+	dx = std::vector<double>(statedim, 0.0);
+	eye = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
+	eye[0][0] = eye[1][1] = 1.0;
+
+	tmp = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
+	tmpunc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
+}
+
 void ConstantStateExtendedKalmanFilter::update(const vector<double>& accel)
 {
 	// run trig functions once
@@ -20,17 +51,17 @@ void ConstantStateExtendedKalmanFilter::update(const vector<double>& accel)
 	innovation[2] = accel[2] - cr * cp * g;
 
 	// innovation uncertainty
-	// S = dh/dx * sigma * dh/dx^T + R
-	dh[0][0] = 0.0;
-	dh[0][1] = cp * g;
-	dh[1][0] = -cr * cp * g;
-	dh[1][1] = sr * sp * g;
-	dh[2][0] = -sr * cp * g;
-	dh[2][1] = -cr * sp * g;
+	// S = jac/dx * sigma * jac/dx^T + R
+	jac[0][0] = 0.0;
+	jac[0][1] = cp * g;
+	jac[1][0] = -cr * cp * g;
+	jac[1][1] = sr * sp * g;
+	jac[2][0] = -sr * cp * g;
+	jac[2][1] = -cr * sp * g;
 
-	transpose(dh, dhT, 3, 2);
-	matmult(dh, state_unc, dhS, 3, 2, 2);
-	matmult(dhS, dhT, innovation_unc, 3, 2, 3);
+	transpose(jac, jacT, 3, 2);
+	matmult(jac, state_unc, tmp, 3, 2, 2);
+	matmult(tmp, jacT, innovation_unc, 3, 2, 3);
 	for(int i = 0; i < 3; i++)
 	{
 		innovation_unc[i][i] += measurement_unc;
@@ -39,8 +70,8 @@ void ConstantStateExtendedKalmanFilter::update(const vector<double>& accel)
 	// calculate kalman gain
 	cholesky cho(innovation_unc);
 	cho.inverse(innovation_unc_inv);
-	matmult(dhT, innovation_unc_inv, dhTSinv, 2, 3, 3);
-	matmult(state_unc, dhTSinv, gain, 2, 2, 3);
+	matmult(jacT, innovation_unc_inv, tmp, 2, 3, 3);
+	matmult(state_unc, tmp, gain, 2, 2, 3);
 
 	// update
 	matvecmult(gain, innovation, dx, 2, 3);
@@ -49,10 +80,10 @@ void ConstantStateExtendedKalmanFilter::update(const vector<double>& accel)
 		state[i] += dx[i];
 	}
 
-	matmult(gain, dh, khtmp, 2, 3, 2);
-	matsubtract(eye, khtmp, khtmp, 2, 2);
+	matmult(gain, jac, tmp, 2, 3, 2);
+	matsubtract(eye, tmp, tmp, 2, 2);
 	matcopy(state_unc, tmpunc, 2, 2);
-	matmult(khtmp, tmpunc, state_unc, 2, 2, 2);
+	matmult(tmp, tmpunc, state_unc, 2, 2, 2);
 }
 
 void ConstantStateExtendedKalmanFilter::predict(double dt)

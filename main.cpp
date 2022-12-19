@@ -21,7 +21,7 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &ConstantStateExtendedKalmanFilter::update)
         .def_readwrite("state", &ConstantStateExtendedKalmanFilter::state)
         .def_readwrite("state_unc", &ConstantStateExtendedKalmanFilter::state_unc)
-        .def_readwrite("jac", &ConstantStateExtendedKalmanFilter::dh)
+        .def_readwrite("jac", &ConstantStateExtendedKalmanFilter::jac)
         .def_readwrite("innovation", &ConstantStateExtendedKalmanFilter::innovation)
         .def_readwrite("innovation_unc", &ConstantStateExtendedKalmanFilter::innovation_unc)
         .def_readwrite("innovation_unc_inv", &ConstantStateExtendedKalmanFilter::innovation_unc_inv)
