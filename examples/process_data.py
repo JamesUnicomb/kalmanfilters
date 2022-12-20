@@ -15,18 +15,20 @@ accpunc = []
 with open("examples/data.txt", "r") as f:
     for r in f.readlines()[1:]:
         micros, ax, ay, az, gx, gy, gz, mx, my, mz = r.rstrip().split(",")
-        
+
         micros = int(micros)
         ax = float(ax)
         ay = float(ay)
         az = float(az)
+
+        accel = kalmanfilters.sensors.accel(ax, ay, az)
 
         dt = (micros - microsprev) * 1e-6
         microsprev = micros
 
         # run kf step
         kf.predict(dt)
-        kf.update([ax, ay, az])
+        kf.update(accel)
         
         t.append(micros)
         acc.append([ax,ay,az])

@@ -21,12 +21,14 @@ while True:
         ay = float(ay)
         az = float(az)
 
+        accel = kalmanfilters.sensors.accel(ax, ay, az)
+
         dt = (micros - microsprev) * 1e-6
         microsprev = micros
 
         # run kf step
         kf.predict(dt)
-        kf.update([ax, ay, az])
+        kf.update(accel)
 
         print(kf.state, kf.state_unc, end='\r')
 

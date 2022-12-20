@@ -17,12 +17,21 @@ PYBIND11_MODULE(kalmanfilters, mod) {
     mod.doc() = "";
 
     py::module sensors = mod.def_submodule("sensors", "sensors to use as input into Kalman filters.");
-    py::class_<accel>(sensors, "accel")
-        .def(py::init<double, double, double>());
-    py::class_<gyro>(sensors, "gyro")
-        .def(py::init<double, double, double>());
-    py::class_<mag>(sensors, "mag")
-        .def(py::init<double, double, double>());
+    py::class_<sensors::accel>(sensors, "accel")
+        .def(py::init<double, double, double>())
+        .def_readwrite("x", &sensors::accel::x)
+        .def_readwrite("y", &sensors::accel::y)
+        .def_readwrite("z", &sensors::accel::z);
+    py::class_<sensors::gyro>(sensors, "gyro")
+        .def(py::init<double, double, double>())
+        .def_readwrite("x", &sensors::gyro::x)
+        .def_readwrite("y", &sensors::gyro::y)
+        .def_readwrite("z", &sensors::gyro::z);
+    py::class_<sensors::mag>(sensors, "mag")
+        .def(py::init<double, double, double>())
+        .def_readwrite("x", &sensors::mag::x)
+        .def_readwrite("y", &sensors::mag::y)
+        .def_readwrite("z", &sensors::mag::z);;
 
     py::class_<ConstantStateExtendedKalmanFilter>(mod, "ConstantStateExtendedKalmanFilter")
         .def(py::init<double, double>())
