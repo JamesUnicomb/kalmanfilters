@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 
 #include "nr3.hpp"
+#include "sensors/sensors.hpp"
 #include "extended_kalman_filter/ConstantStateExtendedKalmanFilter.hpp"
 
 // clang-format off
@@ -14,6 +15,14 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(kalmanfilters, mod) {
     mod.doc() = "";
+
+    py::module sensors = mod.def_submodule("sensors", "sensors to use as input into Kalman filters.");
+    py::class_<accel>(sensors, "accel")
+        .def(py::init<double, double, double>());
+    py::class_<gyro>(sensors, "gyro")
+        .def(py::init<double, double, double>());
+    py::class_<mag>(sensors, "mag")
+        .def(py::init<double, double, double>());
 
     py::class_<ConstantStateExtendedKalmanFilter>(mod, "ConstantStateExtendedKalmanFilter")
         .def(py::init<double, double>())
