@@ -2,7 +2,7 @@ import kalmanfilters
 import numpy as np
 
 def test_load_csekf():
-    kf = kalmanfilters.ConstantStateExtendedKalmanFilter(0.025, 0.05)
+    kf = kalmanfilters.ConstantPositionExtendedKalmanFilter(0.025, 0.05)
 
     assert np.isclose(kf.process_unc, 0.025)
     assert np.isclose(kf.measurement_unc, 0.05)

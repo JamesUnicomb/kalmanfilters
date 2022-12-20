@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 import kalmanfilters
 
-kf = kalmanfilters.ConstantStateExtendedKalmanFilter(2.5, 1.0)
+kf = kalmanfilters.ConstantPositionExtendedKalmanFilter(2.5, 1.0)
 
 microsprev = 0.0
 

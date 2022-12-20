@@ -7,7 +7,7 @@
 #include <vector>
 #include <cmath>
 
-class ConstantStateExtendedKalmanFilter
+class ConstantPositionExtendedKalmanFilter
 {
 public:
 	double process_unc, measurement_unc; // noise constants
@@ -19,7 +19,7 @@ public:
 
 	std::vector<std::vector<double>> gain;
 
-	ConstantStateExtendedKalmanFilter(double process_unc, double measurement_unc);
+	ConstantPositionExtendedKalmanFilter(double process_unc, double measurement_unc);
 
 	void update(const sensors::accel& accel);
 	void predict(double dt);

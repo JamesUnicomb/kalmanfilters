@@ -9,7 +9,7 @@ ext_modules = [
             "main.cpp",
             "src/linalg/linalg.cpp",
             "src/sensors/sensors.cpp",
-            "src/extended_kalman_filter/ConstantStateExtendedKalmanFilter.cpp"
+            "src/extended_kalman_filter/ConstantPositionExtendedKalmanFilter.cpp"
         ],
         include_dirs = ["extern", "src"],
         define_macros = [('VERSION_INFO', __version__)],

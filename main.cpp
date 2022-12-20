@@ -4,7 +4,7 @@
 
 #include "nr3.hpp"
 #include "sensors/sensors.hpp"
-#include "extended_kalman_filter/ConstantStateExtendedKalmanFilter.hpp"
+#include "extended_kalman_filter/ConstantPositionExtendedKalmanFilter.hpp"
 
 // clang-format off
 #define STRINGIFY(x) #x
@@ -33,19 +33,19 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def_readwrite("y", &sensors::mag::y)
         .def_readwrite("z", &sensors::mag::z);;
 
-    py::class_<ConstantStateExtendedKalmanFilter>(mod, "ConstantStateExtendedKalmanFilter")
+    py::class_<ConstantPositionExtendedKalmanFilter>(mod, "ConstantPositionExtendedKalmanFilter")
         .def(py::init<double, double>())
-        .def("predict", &ConstantStateExtendedKalmanFilter::predict)
-        .def("update", &ConstantStateExtendedKalmanFilter::update)
-        .def_readwrite("state", &ConstantStateExtendedKalmanFilter::state)
-        .def_readwrite("state_unc", &ConstantStateExtendedKalmanFilter::state_unc)
-        .def_readwrite("jac", &ConstantStateExtendedKalmanFilter::jac)
-        .def_readwrite("innovation", &ConstantStateExtendedKalmanFilter::innovation)
-        .def_readwrite("innovation_unc", &ConstantStateExtendedKalmanFilter::innovation_unc)
-        .def_readwrite("innovation_unc_inv", &ConstantStateExtendedKalmanFilter::innovation_unc_inv)
-        .def_readwrite("gain", &ConstantStateExtendedKalmanFilter::gain)
-        .def_readwrite("process_unc", &ConstantStateExtendedKalmanFilter::process_unc)
-        .def_readwrite("measurement_unc", &ConstantStateExtendedKalmanFilter::measurement_unc);
+        .def("predict", &ConstantPositionExtendedKalmanFilter::predict)
+        .def("update", &ConstantPositionExtendedKalmanFilter::update)
+        .def_readwrite("state", &ConstantPositionExtendedKalmanFilter::state)
+        .def_readwrite("state_unc", &ConstantPositionExtendedKalmanFilter::state_unc)
+        .def_readwrite("jac", &ConstantPositionExtendedKalmanFilter::jac)
+        .def_readwrite("innovation", &ConstantPositionExtendedKalmanFilter::innovation)
+        .def_readwrite("innovation_unc", &ConstantPositionExtendedKalmanFilter::innovation_unc)
+        .def_readwrite("innovation_unc_inv", &ConstantPositionExtendedKalmanFilter::innovation_unc_inv)
+        .def_readwrite("gain", &ConstantPositionExtendedKalmanFilter::gain)
+        .def_readwrite("process_unc", &ConstantPositionExtendedKalmanFilter::process_unc)
+        .def_readwrite("measurement_unc", &ConstantPositionExtendedKalmanFilter::measurement_unc);
 
 
 #ifdef VERSION_INFO

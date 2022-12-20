@@ -5,7 +5,7 @@ import kalmanfilters
 ser = serial.Serial('/dev/tty.usbmodem205E3072594D1', 9600)
 ser.flushInput()
 
-kf = kalmanfilters.ConstantStateExtendedKalmanFilter(0.025, 0.05)
+kf = kalmanfilters.ConstantPositionExtendedKalmanFilter(0.025, 0.05)
 
 microsprev = 0.0
 

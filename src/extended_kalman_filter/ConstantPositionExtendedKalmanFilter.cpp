@@ -1,19 +1,22 @@
-#include "ConstantStateExtendedKalmanFilter.hpp"
+#include "ConstantPositionExtendedKalmanFilter.hpp"
 #include "linalg/linalg.hpp"
 #include "sensors/sensors.hpp"
 
 using namespace std;
 using namespace linalg;
 
-ConstantStateExtendedKalmanFilter::ConstantStateExtendedKalmanFilter(
+ConstantPositionExtendedKalmanFilter::ConstantPositionExtendedKalmanFilter(
 	double process_unc, double measurement_unc)
 	: process_unc(process_unc)
 	, measurement_unc(measurement_unc)
 {
+	int i;
 	// state is 2x1 and sigma is 2x2
 	state = std::vector<double>(statedim, 0.0);
 	state_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
-	state_unc[0][0] = state_unc[1][1] = 1.0;
+	for (i = 0; i < statedim; i++) {
+        state_unc[i][i] = 1.0;
+	}
 
 	// innovation is 3x1
 	innovation = std::vector<double>(measuredim, 0.0);
@@ -30,13 +33,15 @@ ConstantStateExtendedKalmanFilter::ConstantStateExtendedKalmanFilter(
 	// update variables
 	dx = std::vector<double>(statedim, 0.0);
 	eye = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
-	eye[0][0] = eye[1][1] = 1.0;
+	for (i = 0; i < statedim; i++) {
+        eye[i][i] = 1.0;
+	}
 
 	tmp = std::vector<std::vector<double>>(MAX(measuredim, statedim), std::vector<double>(MAX(measuredim, statedim), 0.0));
 	tmpunc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
 }
 
-void ConstantStateExtendedKalmanFilter::update(const sensors::accel& accel)
+void ConstantPositionExtendedKalmanFilter::update(const sensors::accel& accel)
 {
 	// run trig functions once
 	double sr, cr, cp, sp;
@@ -87,7 +92,7 @@ void ConstantStateExtendedKalmanFilter::update(const sensors::accel& accel)
 	matmult(tmp, tmpunc, state_unc, statedim, statedim, statedim);
 }
 
-void ConstantStateExtendedKalmanFilter::predict(double dt)
+void ConstantPositionExtendedKalmanFilter::predict(double dt)
 {
 	// x = f(x) ~ x
 	// sigma = df/dx * sigma * df/dx^T + Q ~ sigma + Q
