@@ -44,26 +44,26 @@ ConstantPositionExtendedKalmanFilter::ConstantPositionExtendedKalmanFilter(
 void ConstantPositionExtendedKalmanFilter::update(const sensors::accel& accel)
 {
 	// run trig functions once
-	double sr, cr, cp, sp;
-	sr = sin(state[0]);
-	cr = cos(state[0]);
-	sp = sin(state[1]);
-	cp = cos(state[1]);
+	double s0, c0, c1, s1;
+	s0 = sin(state[0]);
+	c0 = cos(state[0]);
+	s1 = sin(state[1]);
+	c1 = cos(state[1]);
 
 	// calculate innovation
 	// y = z - h(x)
-	innovation[0] = accel.x - sp * g;
-	innovation[1] = accel.y + sr * cp * g;
-	innovation[2] = accel.z - cr * cp * g;
+	innovation[0] = accel.x - s1 * g;
+	innovation[1] = accel.y + s0 * c1 * g;
+	innovation[2] = accel.z - c0 * c1 * g;
 
 	// innovation uncertainty
 	// S = jac/dx * sigma * jac/dx^T + R
 	jac[0][0] = 0.0;
-	jac[0][1] = cp * g;
-	jac[1][0] = -cr * cp * g;
-	jac[1][1] = sr * sp * g;
-	jac[2][0] = -sr * cp * g;
-	jac[2][1] = -cr * sp * g;
+	jac[0][1] = c1 * g;
+	jac[1][0] = -c0 * c1 * g;
+	jac[1][1] = s0 * s1 * g;
+	jac[2][0] = -s0 * c1 * g;
+	jac[2][1] = -c0 * s1 * g;
 
 	transpose(jac, jacT, measuredim, statedim);
 	matmult(jac, state_unc, tmp, measuredim, statedim, statedim);
