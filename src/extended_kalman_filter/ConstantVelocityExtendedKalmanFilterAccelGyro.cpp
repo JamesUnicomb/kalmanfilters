@@ -54,19 +54,19 @@ void ConstantVelocityExtendedKalmanFilter::update(const sensors::accel& accel, d
 
 	// calculate innovation
 	// y = z - h(x)
-	innovation[0] = accel.x - s1 * g;
-	innovation[1] = accel.y + s0 * c1 * g;
-	innovation[2] = accel.z - c0 * c1 * g;
+	innovation[0] = accel.x - (-s1 * g);
+	innovation[1] = accel.y - (s0 * c1 * g);
+	innovation[2] = accel.z - (c0 * c1 * g);
 
 	// innovation uncertainty
 	// S = jac/dx * sigma * jac/dx^T + R
 	jac[0][0] = 0.0;
-	jac[0][1] = c1 * g;
+	jac[0][1] = -c1 * g;
 	jac[0][2] = 0.0;
 	jac[0][3] = 0.0;
 	jac[0][4] = 0.0;
-	jac[1][0] = -c0 * c1 * g;
-	jac[1][1] = s0 * s1 * g;
+	jac[1][0] = c0 * c1 * g;
+	jac[1][1] = -s0 * s1 * g;
 	jac[1][2] = 0.0;
 	jac[1][3] = 0.0;
 	jac[1][4] = 0.0;
@@ -165,18 +165,34 @@ void ConstantVelocityExtendedKalmanFilter::update(const sensors::gyro& gyro, dou
 
 void ConstantVelocityExtendedKalmanFilter::predict(double dt)
 {
-	// x = f(x) ~ [1, dt] * x
-	// sigma = df/dx * sigma * df/dx^T + Q ~ sigma + Q
 	int i;
-	for(i = 0; i < 2; i++)
+	// x = f(x) ~ [1, dt] * x
+    state[0] += dt * state[2];
+    state[1] += dt * state[3];
+
+	// sigma = df/dx * sigma * df/dx^T + Q ~ sigma + Q
+    // compute df/dx
+    setzero(tmp, statedim, statedim);
+    for (i = 0; i < statedim; i++) {
+        tmp[i][i] = 1.0;
+    }
+    tmp[0][2] = dt;
+    tmp[1][3] = dt;
+
+    // compute df/dx * sigma * df/dx^T
+	matmult(tmp, state_unc, tmpunc, statedim, statedim, statedim);
+    tmp[0][2] = 0.0; tmp[2][0] = dt; // transpose df/dx
+    tmp[1][3] = 0.0; tmp[3][1] = dt; // transpose df/dx
+    matmult(tmpunc, tmp, state_unc, statedim, statedim, statedim);
+
+    // add Q
+    for(i = 0; i < 2; i++)
 	{
-		state_unc[i][i] += dt * dt * dt / 3.0 * process_unc + 2.0 * dt * state_unc[i + 2][i];
+		state_unc[i][i] += dt * dt * dt / 3.0 * process_unc;
 		state_unc[i + 2][i] += dt * dt / 2.0 * process_unc;
 		state_unc[i][i + 2] += dt * dt / 2.0 * process_unc;
 	}
-
-	for(i = 2; i < 5; i++)
-	{
-		state_unc[i][i] += dt * process_unc;
+	for (i = 0; i < 3; i++) {
+		state_unc[i+2][i+2] += dt * process_unc;
 	}
 }
