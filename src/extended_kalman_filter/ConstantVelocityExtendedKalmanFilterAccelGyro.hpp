@@ -1,5 +1,5 @@
-#ifndef _CVEKF_HPP_
-#define _CVEKF_HPP_
+#ifndef _CVEKFACCGYRO_HPP_
+#define _CVEKFACCGYRO_HPP_
 
 #include "nr3.hpp"
 #include "linalg/linalg.hpp"

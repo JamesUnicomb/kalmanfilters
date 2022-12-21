@@ -5,7 +5,8 @@
 #include "nr3.hpp"
 #include "sensors/sensors.hpp"
 #include "extended_kalman_filter/ConstantPositionExtendedKalmanFilter.hpp"
-#include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilter.hpp"
+#include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccel.hpp"
+#include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccelGyro.hpp"
 
 // clang-format off
 #define STRINGIFY(x) #x
@@ -47,6 +48,19 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def_readwrite("gain", &ConstantPositionExtendedKalmanFilter::gain)
         .def_readwrite("process_unc", &ConstantPositionExtendedKalmanFilter::process_unc)
         .def_readwrite("measurement_unc", &ConstantPositionExtendedKalmanFilter::measurement_unc);
+
+    py::class_<ConstantVelocityExtendedKalmanFilterAccel>(mod, "ConstantVelocityExtendedKalmanFilterAccel")
+        .def(py::init<double>())
+        .def("predict", &ConstantVelocityExtendedKalmanFilterAccel::predict)
+        .def("update", py::overload_cast<const sensors::accel&, double>(&ConstantVelocityExtendedKalmanFilterAccel::update))
+        .def_readwrite("state", &ConstantVelocityExtendedKalmanFilterAccel::state)
+        .def_readwrite("state_unc", &ConstantVelocityExtendedKalmanFilterAccel::state_unc)
+        .def_readwrite("jac", &ConstantVelocityExtendedKalmanFilterAccel::jac)
+        .def_readwrite("innovation", &ConstantVelocityExtendedKalmanFilterAccel::innovation)
+        .def_readwrite("innovation_unc", &ConstantVelocityExtendedKalmanFilterAccel::innovation_unc)
+        .def_readwrite("innovation_unc_inv", &ConstantVelocityExtendedKalmanFilterAccel::innovation_unc_inv)
+        .def_readwrite("gain", &ConstantVelocityExtendedKalmanFilterAccel::gain)
+        .def_readwrite("process_unc", &ConstantVelocityExtendedKalmanFilterAccel::process_unc);
 
     py::class_<ConstantVelocityExtendedKalmanFilter>(mod, "ConstantVelocityExtendedKalmanFilter")
         .def(py::init<double>())

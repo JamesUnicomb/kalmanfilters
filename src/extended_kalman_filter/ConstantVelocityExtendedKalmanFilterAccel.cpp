@@ -1,24 +1,24 @@
-#include "ConstantPositionExtendedKalmanFilter.hpp"
+#include "ConstantVelocityExtendedKalmanFilterAccel.hpp"
 #include "linalg/linalg.hpp"
 #include "sensors/sensors.hpp"
 
 using namespace std;
 using namespace linalg;
 
-ConstantPositionExtendedKalmanFilter::ConstantPositionExtendedKalmanFilter(
-	double process_unc, double measurement_unc)
+ConstantVelocityExtendedKalmanFilterAccel::ConstantVelocityExtendedKalmanFilterAccel(
+	double process_unc)
 	: process_unc(process_unc)
-	, measurement_unc(measurement_unc)
 {
 	int i;
-	// state is 2x1 and sigma is 2x2
+	// state is 4x1 and sigma is 4x4
 	state = std::vector<double>(statedim, 0.0);
 	state_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
-	for (i = 0; i < statedim; i++) {
-        state_unc[i][i] = 1.0;
+	for(i = 0; i < statedim; i++)
+	{
+		state_unc[i][i] = 1.0;
 	}
 
-	// innovation is 3x1
+	// innovation is 4x1
 	innovation = std::vector<double>(measuredim, 0.0);
 	innovation_unc = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
 	innovation_unc_inv = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
@@ -27,24 +27,26 @@ ConstantPositionExtendedKalmanFilter::ConstantPositionExtendedKalmanFilter(
 	jac = std::vector<std::vector<double>>(measuredim, std::vector<double>(statedim, 0.0));
 	jacT = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
 
-	// kalman gain is 2x3
+	// kalman gain is 4x3
 	gain = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
 
 	// update variables
 	dx = std::vector<double>(statedim, 0.0);
 	eye = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
-	for (i = 0; i < statedim; i++) {
-        eye[i][i] = 1.0;
+	for(i = 0; i < statedim; i++)
+	{
+		eye[i][i] = 1.0;
 	}
 
-	tmp = std::vector<std::vector<double>>(MAX(measuredim, statedim), std::vector<double>(MAX(measuredim, statedim), 0.0));
+	tmp = std::vector<std::vector<double>>(
+		MAX(measuredim, statedim), std::vector<double>(MAX(measuredim, statedim), 0.0));
 	tmpunc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
 }
 
-void ConstantPositionExtendedKalmanFilter::update(const sensors::accel& accel)
+void ConstantVelocityExtendedKalmanFilterAccel::update(const sensors::accel& accel, double unc)
 {
 	// run trig functions once
-	double s0, c0, c1, s1;
+	double s0, c0, s1, c1;
 	s0 = sin(state[0]);
 	c0 = cos(state[0]);
 	s1 = sin(state[1]);
@@ -60,17 +62,23 @@ void ConstantPositionExtendedKalmanFilter::update(const sensors::accel& accel)
 	// S = jac/dx * sigma * jac/dx^T + R
 	jac[0][0] = 0.0;
 	jac[0][1] = -c1 * g;
+	jac[0][2] = 0.0;
+	jac[0][3] = 0.0;
 	jac[1][0] = c0 * c1 * g;
 	jac[1][1] = -s0 * s1 * g;
+	jac[1][2] = 0.0;
+	jac[1][3] = 0.0;
 	jac[2][0] = -s0 * c1 * g;
 	jac[2][1] = -c0 * s1 * g;
+	jac[2][2] = 0.0;
+	jac[2][3] = 0.0;
 
 	transpose(jac, jacT, measuredim, statedim);
 	matmult(jac, state_unc, tmp, measuredim, statedim, statedim);
 	matmult(tmp, jacT, innovation_unc, measuredim, statedim, measuredim);
 	for(int i = 0; i < measuredim; i++)
 	{
-		innovation_unc[i][i] += measurement_unc;
+		innovation_unc[i][i] += unc;
 	}
 
 	// calculate kalman gain
@@ -92,12 +100,34 @@ void ConstantPositionExtendedKalmanFilter::update(const sensors::accel& accel)
 	matmult(tmp, tmpunc, state_unc, statedim, statedim, statedim);
 }
 
-void ConstantPositionExtendedKalmanFilter::predict(double dt)
+void ConstantVelocityExtendedKalmanFilterAccel::predict(double dt)
 {
-	// x = f(x) ~ x
+    int i;
+	// x = f(x) ~ [1, dt] * x
+    state[0] += dt * state[2];
+    state[1] += dt * state[3];
+
 	// sigma = df/dx * sigma * df/dx^T + Q ~ sigma + Q
-	for(int i = 0; i < 2; i++)
+    // compute df/dx
+    setzero(tmp, statedim, statedim);
+    for (i = 0; i < statedim; i++) {
+        tmp[i][i] = 1.0;
+    }
+    tmp[0][2] = dt;
+    tmp[1][3] = dt;
+	
+    // compute df/dx * sigma * df/dx^T
+	matmult(tmp, state_unc, tmpunc, statedim, statedim, statedim);
+    tmp[0][2] = 0.0; tmp[2][0] = dt; // transpose df/dx
+    tmp[1][3] = 0.0; tmp[3][1] = dt; // transpose df/dx
+    matmult(tmpunc, tmp, state_unc, statedim, statedim, statedim);
+
+    // add Q
+    for(i = 0; i < 2; i++)
 	{
-		state_unc[i][i] += dt * process_unc;
+		state_unc[i][i] += dt * dt * dt / 3.0 * process_unc;
+		state_unc[i + 2][i] += dt * dt / 2.0 * process_unc;
+		state_unc[i][i + 2] += dt * dt / 2.0 * process_unc;
+        state_unc[i+2][i+2] += dt * process_unc;
 	}
 }
