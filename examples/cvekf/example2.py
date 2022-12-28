@@ -3,60 +3,67 @@ import matplotlib.pyplot as plt
 
 import kalmanfilters
 
-kf = kalmanfilters.ConstantVelocityExtendedKalmanFilter(20.0)
+kf = kalmanfilters.ConstantVelocityExtendedKalmanFilter(5.0)
 
 microsprev = 0.0
 
-t = []
+tacc = []
 acc = []
 accp = []
 accpunc = []
 
+tdv = []
 dv = []
 dvp = []
 dvpunc = []
 
 with open("examples/data/data2.txt", "r") as f:
     for r in f.readlines()[1:]:
-        micros, ax, ay, az, gx, gy, gz, mx, my, mz = r.rstrip().split(",")
+        sensor, data = r.rstrip().split(":")
+        micros, x, y, z = data.split(",")
 
         micros = int(micros)
-        ax = float(ax)
-        ay = float(ay)
-        az = float(az)
-        gx = float(gx)
-        gy = float(gy)
-        gz = float(gz)
-
-        accel = kalmanfilters.sensors.accel(ax, ay, az)
-        gyro = kalmanfilters.sensors.gyro(gx, gy, gz)
+        x = float(x)
+        y = float(y)
+        z = float(z)
 
         dt = (micros - microsprev) * 1e-6
         microsprev = micros
 
-        # run kf step
-        kf.predict(dt)
-        kf.update(accel, 1.0)
-        
-        t.append(micros)
-        acc.append([ax,ay,az])
-        accp.append([ax - kf.innovation[0], ay - kf.innovation[1], az - kf.innovation[2]])
-        jac = kf.jac
-        s = np.dot(jac, np.dot(kf.state_unc, np.transpose(jac)))
-        accpunc.append(s)
+        if sensor == "accl":
+            accel = kalmanfilters.sensors.accel(x, y, z)
 
-        kf.update(gyro, 0.25)
+            # run kf step
+            kf.predict(dt)
+            kf.update(accel, 1.25)
 
-        R = [
-            [1.0, 0.0, np.sin(kf.state[1])],
-            [0.0, np.cos(kf.state[0]), np.sin(kf.state[0]) * np.cos(kf.state[1])],
-            [0.0, -np.sin(kf.state[0]), np.cos(kf.state[0]) * np.cos(kf.state[1])]
-        ]
+            tacc.append(micros)
+            acc.append([x,y,z])
+            accp.append([x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]])
+            jac = kf.jac
+            s = np.dot(jac, np.dot(kf.state_unc, np.transpose(jac)))
+            accpunc.append(s)
 
-        dv.append(np.dot(np.linalg.inv(R), [gx, gy, gz]).tolist())
-        dvp.append([kf.state[2], kf.state[3], kf.state[4]])
-        dvpunc.append(np.dot(np.linalg.inv(R), np.dot([s[2:] for s in kf.state_unc[2:]], np.linalg.inv(R).T)).tolist())
-        
+        elif sensor == "gyro":
+            gyro = kalmanfilters.sensors.gyro(x, y, z)
+
+            # run kf step
+            kf.predict(dt)
+            kf.update(gyro, 1.0)
+            
+            R = [
+                [1.0, 0.0, np.sin(kf.state[1])],
+                [0.0, np.cos(kf.state[0]), np.sin(kf.state[0]) * np.cos(kf.state[1])],
+                [0.0, -np.sin(kf.state[0]), np.cos(kf.state[0]) * np.cos(kf.state[1])]
+            ]
+
+            tdv.append(micros)
+            dv.append(np.dot(np.linalg.inv(R), [x, y, z]).tolist())
+            dvp.append([kf.state[2], kf.state[3], kf.state[4]])
+            jac = kf.jac
+
+            dvpunc.append(np.dot(np.linalg.inv(R), np.dot([s[2:] for s in kf.state_unc[2:]], np.linalg.inv(R).T)).tolist())
+
         print('state: \n', kf.state)
         print('state_unc: \n', kf.state_unc)
 
@@ -64,49 +71,39 @@ acc = np.array(acc)
 accp = np.array(accp)
 accpunc = np.array(accpunc)
 
-dv = np.array(dv)
-dvp = np.array(dvp)
-dvpunc = np.array(dvpunc)
-
-fig, ax = plt.subplots(4,2)
+fig, ax = plt.subplots(3,1)
 
 for i in range(3):
-    ax[i,0].scatter(t, acc[:,i], s=0.2)
-    ax[i,0].plot(t, accp[:,i])
-    ax[i,0].fill_between(
-        t,
+    ax[i].scatter(tacc, acc[:,i])
+    ax[i].plot(tacc, accp[:,i])
+    ax[i].fill_between(
+        tacc,
         accp[:,i] - 2.0 * np.sqrt(accpunc[:,i,i]),
         accp[:,i] + 2.0 * np.sqrt(accpunc[:,i,i]),
         alpha=0.2,
         color='C0'
     )
-    ax[i,0].set_ylim(-12.0,12.0)
+    ax[i].set_ylim(-12.0,12.0)
 
-    ax[i,1].scatter(t, dv[:,i], s=0.2)
-    ax[i,1].plot(t, dvp[:,i])
-    ax[i,1].fill_between(
-        t,
+plt.show()
+
+
+dv = np.array(dv)
+dvp = np.array(dvp)
+dvpunc = np.array(dvpunc)
+
+fig, ax = plt.subplots(3,1)
+
+for i in range(3):
+    ax[i].scatter(tdv, dv[:,i])
+    ax[i].plot(tdv, dvp[:,i])
+    ax[i].fill_between(
+        tdv,
         dvp[:,i] - 2.0 * np.sqrt(dvpunc[:,i,i]),
         dvp[:,i] + 2.0 * np.sqrt(dvpunc[:,i,i]),
         alpha=0.2,
         color='C0'
     )
-    ax[i,1].set_ylim(-3.50,3.50)
-
-ax[3,0].plot(t, np.linalg.norm(acc - accp, axis=1))
-ax[3,0].fill_between(
-    t, 
-    np.zeros_like(t),
-    2.0 * np.sqrt(np.square(accpunc[:,0,0]) + np.square(accpunc[:,1,1]) + np.square(accpunc[:,2,2])),
-    alpha=0.2,
-    color='C0')
-
-ax[3,1].plot(t, np.linalg.norm(dv - dvp, axis=1))
-# ax[3,1].fill_between(
-#     t, 
-#     np.zeros_like(t),
-#     2.0 * np.sqrt(np.square(dvpunc[:,0,0]) + np.square(dvpunc[:,1,1]) + np.square(dvpunc[:,2,2])),
-#     alpha=0.2,
-#     color='C0')
+    ax[i].set_ylim(-4.0,4.0)
 
 plt.show()

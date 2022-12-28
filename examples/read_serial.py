@@ -1,10 +1,10 @@
 import serial
 
-ser = serial.Serial('/dev/tty.usbmodem205E3072594D1', 9600)
+ser = serial.Serial('/dev/tty.usbmodem205E3072594D1', 115200)
 ser.flushInput()
 
 with open("examples/data.txt", "w") as f:
-    f.write("milli,accel_x,accel_y,accel_x,gyro_x,gyro_y,gyro_z\n")
+    f.write("sensor,micros,x,y,x\n")
 
 while True:
     try:

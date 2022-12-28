@@ -4,9 +4,11 @@
 
 #include "nr3.hpp"
 #include "sensors/sensors.hpp"
+#include "extended_kalman_filter/ExtendedKalmanFilter.hpp"
 #include "extended_kalman_filter/ConstantPositionExtendedKalmanFilter.hpp"
 #include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccel.hpp"
 #include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccelGyro.hpp"
+#include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccelGyroMag.hpp"
 
 // clang-format off
 #define STRINGIFY(x) #x
@@ -75,6 +77,21 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def_readwrite("innovation_unc_inv", &ConstantVelocityExtendedKalmanFilter::innovation_unc_inv)
         .def_readwrite("gain", &ConstantVelocityExtendedKalmanFilter::gain)
         .def_readwrite("process_unc", &ConstantVelocityExtendedKalmanFilter::process_unc);
+
+    py::class_<Tracking>(mod, "Tracking")
+        .def(py::init<double>())
+        .def("predict", &Tracking::predict)
+        .def("update", py::overload_cast<const sensors::accel&, double>(&Tracking::update))
+        .def("update", py::overload_cast<const sensors::gyro&, double>(&Tracking::update))
+        .def("update", py::overload_cast<const sensors::mag&, double>(&Tracking::update))
+        .def_readwrite("state", &Tracking::state)
+        .def_readwrite("state_unc", &Tracking::state_unc)
+        .def_readwrite("jac", &Tracking::jac)
+        .def_readwrite("innovation", &Tracking::innovation)
+        .def_readwrite("innovation_unc", &Tracking::innovation_unc)
+        .def_readwrite("innovation_unc_inv", &Tracking::innovation_unc_inv)
+        .def_readwrite("gain", &Tracking::gain)
+        .def_readwrite("process_unc", &Tracking::process_unc);
 
 #ifdef VERSION_INFO
     mod.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

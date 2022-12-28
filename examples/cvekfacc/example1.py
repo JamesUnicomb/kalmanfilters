@@ -7,57 +7,57 @@ kf = kalmanfilters.ConstantVelocityExtendedKalmanFilterAccel(5.0)
 
 microsprev = 0.0
 
-t = []
+tacc = []
 acc = []
 accp = []
 accpunc = []
 
+tdv = []
 dv = []
 dvp = []
 dvpunc = []
 
 with open("examples/data/data1.txt", "r") as f:
     for r in f.readlines()[1:]:
-        micros, ax, ay, az, gx, gy, gz, mx, my, mz = r.rstrip().split(",")
+        sensor, data = r.rstrip().split(":")
+        micros, x, y, z = data.split(",")
 
         micros = int(micros)
-        ax = float(ax)
-        ay = float(ay)
-        az = float(az)
-        gx = float(gx)
-        gy = float(gy)
-        gz = float(gz)
-        mx = float(mx)
-        my = float(my)
-        mz = float(mz)
+        x = float(x)
+        y = float(y)
+        z = float(z)
 
-        accel = kalmanfilters.sensors.accel(ax, ay, az)
-        gyro = kalmanfilters.sensors.gyro(gx, gy, gz)
-        mag = kalmanfilters.sensors.mag(mx, my, mz)
+        if sensor == "accl":
+            accel = kalmanfilters.sensors.accel(x, y, z)
+            
+            dt = (micros - microsprev) * 1e-6
+            microsprev = micros
 
-        dt = (micros - microsprev) * 1e-6
-        microsprev = micros
+            # run kf step
+            kf.predict(dt)
+            kf.update(accel, 0.25)
+            
+            tacc.append(micros)
+            acc.append([x,y,z])
+            accp.append([x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]])
+            jac = kf.jac
+            s = np.dot(jac, np.dot(kf.state_unc, np.transpose(jac)))
+            accpunc.append(s)
 
-        # run kf step
-        kf.predict(dt)
-        kf.update(accel, 0.25)
-        
-        t.append(micros)
-        acc.append([ax,ay,az])
-        accp.append([ax - kf.innovation[0], ay - kf.innovation[1], az - kf.innovation[2]])
-        jac = kf.jac
-        s = np.dot(jac, np.dot(kf.state_unc, np.transpose(jac)))
-        accpunc.append(s)
+        elif sensor == "gyro":
+            gyro = kalmanfilters.sensors.gyro(x, y, z)
 
-        R = [
-            [1.0, 0.0, np.sin(kf.state[1])],
-            [0.0, np.cos(kf.state[0]), np.sin(kf.state[0]) * np.cos(kf.state[1])],
-            [0.0, -np.sin(kf.state[0]), np.cos(kf.state[0]) * np.cos(kf.state[1])]
-        ]
+            tdv.append(micros)
 
-        dv.append(np.dot(np.linalg.inv(R), [gx, gy, gz]).tolist())
-        dvp.append([kf.state[2], kf.state[3]])
-        dvpunc.append([s[2:] for s in kf.state_unc[2:]])
+            R = [
+                [1.0, 0.0, np.sin(kf.state[1])],
+                [0.0, np.cos(kf.state[0]), np.sin(kf.state[0]) * np.cos(kf.state[1])],
+                [0.0, -np.sin(kf.state[0]), np.cos(kf.state[0]) * np.cos(kf.state[1])]
+            ]
+
+            dv.append(np.dot(np.linalg.inv(R), [x, y, z]).tolist())
+            dvp.append([kf.state[2], kf.state[3]])
+            dvpunc.append([s[2:] for s in kf.state_unc[2:]])
         
         print('state: \n', kf.state)
         print('state_unc: \n', kf.state_unc)
@@ -69,10 +69,10 @@ accpunc = np.array(accpunc)
 fig, ax = plt.subplots(3,1)
 
 for i in range(3):
-    ax[i].scatter(t, acc[:,i])
-    ax[i].plot(t, accp[:,i])
+    ax[i].scatter(tacc, acc[:,i])
+    ax[i].plot(tacc, accp[:,i])
     ax[i].fill_between(
-        t,
+        tacc,
         accp[:,i] - 2.0 * np.sqrt(accpunc[:,i,i]),
         accp[:,i] + 2.0 * np.sqrt(accpunc[:,i,i]),
         alpha=0.2,
@@ -93,10 +93,10 @@ dvpunc = np.array(dvpunc)
 fig, ax = plt.subplots(2,1)
 
 for i in range(2):
-    ax[i].scatter(t, dv[:,i])
-    ax[i].plot(t, dvp[:,i])
+    ax[i].scatter(tdv, dv[:,i])
+    ax[i].plot(tdv, dvp[:,i])
     ax[i].fill_between(
-        t,
+        tdv,
         dvp[:,i] - 2.0 * np.sqrt(dvpunc[:,i,i]),
         dvp[:,i] + 2.0 * np.sqrt(dvpunc[:,i,i]),
         alpha=0.2,

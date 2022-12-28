@@ -29,6 +29,14 @@ void matmult(
 	int n1,
 	int n2,
 	int n3);
+void vecadd(std::vector<double>& a, std::vector<double>& b, std::vector<double>& c, int n1);
+void vecsubtract(std::vector<double>& a, std::vector<double>& b, std::vector<double>& c, int n1);
+void matadd(
+	std::vector<std::vector<double>>& a,
+	std::vector<std::vector<double>>& b,
+	std::vector<std::vector<double>>& c,
+	int n1,
+	int n2);
 void matsubtract(
 	std::vector<std::vector<double>>& a,
 	std::vector<std::vector<double>>& b,

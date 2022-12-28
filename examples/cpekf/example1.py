@@ -14,34 +14,36 @@ accpunc = []
 
 with open("examples/data/data1.txt", "r") as f:
     for r in f.readlines()[1:]:
-        micros, ax, ay, az, gx, gy, gz, mx, my, mz = r.rstrip().split(",")
+        sensor, data = r.rstrip().split(":")
+        micros, x, y, z = data.split(",")
 
         micros = int(micros)
-        ax = float(ax)
-        ay = float(ay)
-        az = float(az)
+        x = float(x)
+        y = float(y)
+        z = float(z)
 
-        accel = kalmanfilters.sensors.accel(ax, ay, az)
+        if sensor == "accl":
+            accel = kalmanfilters.sensors.accel(x, y, z)
 
-        dt = (micros - microsprev) * 1e-6
-        microsprev = micros
+            dt = (micros - microsprev) * 1e-6
+            microsprev = micros
 
-        # run kf step
-        kf.predict(dt)
-        kf.update(accel)
-        
-        t.append(micros)
-        acc.append([ax,ay,az])
-        accp.append([ax - kf.innovation[0], ay - kf.innovation[1], az - kf.innovation[2]])
-        
-        jac = kf.jac
+            # run kf step
+            kf.predict(dt)
+            kf.update(accel)
+            
+            t.append(micros)
+            acc.append([x,y,z])
+            accp.append([x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]])
+            
+            jac = kf.jac
 
-        s = np.dot(jac, np.dot(kf.state_unc, np.transpose(jac)))
+            s = np.dot(jac, np.dot(kf.state_unc, np.transpose(jac)))
 
-        accpunc.append(s)
+            accpunc.append(s)
 
-        print('state: \n', kf.state)
-        print('state_unc: \n', kf.state_unc)
+            print('state: \n', kf.state)
+            print('state_unc: \n', kf.state_unc)
 
 acc = np.array(acc)
 accp = np.array(accp)
