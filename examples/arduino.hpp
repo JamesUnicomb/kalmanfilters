@@ -3,9 +3,9 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h> 
 
-#define LIS3MDL_CX -35.9544001 
-#define LIS3MDL_CY 9.0032138
-#define LIS3MDL_CZ 11.2905578
+#define LIS3MDL_CX -35.9544001 // values used after calibration
+#define LIS3MDL_CY 9.0032138 // values used after calibration
+#define LIS3MDL_CZ 11.2905578 // values used after calibration
 
 Adafruit_LSM6DSOX sox;
 Adafruit_LIS3MDL lis3mdl;

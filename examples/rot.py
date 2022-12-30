@@ -1,4 +1,12 @@
-from sympy import *
+from sympy import symbols, Matrix, cos, sin, diff, transpose
+
+"""
+This is a basic example of how to compute jacobians and 
+turn it into simpler c++ code using symbolic programming (sympy).
+
+The equations can be much more complicated and sympy will easily 
+calculate the derivatives for you.
+"""
 
 c0, s0, c1, s1, c2, s2 = symbols("c0 s0 c1 s1 c2 s2")
 R2 = Matrix([[c2, -s2, 0], [s2, c2, 0], [0, 0, 1]])

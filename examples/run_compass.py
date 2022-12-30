@@ -9,7 +9,7 @@ import kalmanfilters
 ser = serial.Serial('/dev/tty.usbmodem205E3072594D1', 9600)
 ser.flushInput()
 
-kf = kalmanfilters.Tracking(25.0)
+kf = kalmanfilters.cvekf(25.0)
 
 microsprev = 0.0
 
@@ -30,35 +30,33 @@ while True:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            accel = kalmanfilters.sensors.accel(x, y, z)
+            accel = kalmanfilters.sensors.accel(x, y, z, 0.25, 0.25, 0.25)
 
             # run kf step
             kf.predict(dt)
-            kf.update(accel, 0.25)
+            kf.update(accel)
 
         elif sensor == "gyro":
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            gyro = kalmanfilters.sensors.gyro(x, y, z)
+            gyro = kalmanfilters.sensors.gyro(x, y, z, 0.25, 0.25, 0.25)
 
             # run kf step
             kf.predict(dt)
-            kf.update(gyro, 0.25)
+            kf.update(gyro)
 
         elif sensor == "mag":
             dt = (micros - microsprev) * 1e-6
             microsprev = micros 
 
-            mag = kalmanfilters.sensors.mag(x, y, z)
+            mag = kalmanfilters.sensors.mag(x, y, z, 250.0, 250.0, 250.0)
 
             # run kf step
             kf.predict(dt)
-            kf.update(mag, 450.0)
+            kf.update(mag)
 
         print(360.0 - np.mod(np.rad2deg(kf.state[2]), 360.0))
-
-        #print(kf.state, kf.state_unc, end='\r')
 
     except (KeyboardInterrupt, SerialException) as e:
         print(e)

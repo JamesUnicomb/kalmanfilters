@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 import kalmanfilters
 
-kf = kalmanfilters.ConstantPositionExtendedKalmanFilter(10.0, 0.1)
+kf = kalmanfilters.cpekf(1.0)
 
 microsprev = 0.0
 
@@ -23,7 +23,7 @@ with open("examples/data/data2.txt", "r") as f:
         z = float(z)
 
         if sensor == "accl":
-            accel = kalmanfilters.sensors.accel(x, y, z)
+            accel = kalmanfilters.sensors.accel(x, y, z, 0.025, 0.025, 0.025)
 
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
@@ -36,9 +36,8 @@ with open("examples/data/data2.txt", "r") as f:
             acc.append([x,y,z])
             accp.append([x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]])
             
-            jac = kf.jac
-
-            s = np.dot(jac, np.dot(kf.state_unc, np.transpose(jac)))
+            jac = kf.dhdx
+            s = kf.innovation_unc
 
             accpunc.append(s)
 
@@ -61,5 +60,9 @@ for i in range(3):
         alpha=0.2,
         color='C0'
     )
+
+ax[0].set_ylim(-12.0, 12.0)
+ax[1].set_ylim(-12.0, 12.0)
+ax[2].set_ylim(-12.0, 12.0)
 
 plt.show()

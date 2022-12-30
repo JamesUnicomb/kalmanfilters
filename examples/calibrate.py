@@ -1,6 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""
+calibration script for magnetometer
+    1. change values in arduino script to zero.
+    2. run read_serial.py and save data as calibrate.
+    3. run this script to find new values to put into 
+       arduino script.
+"""
+
 mag = []
 
 with open("examples/calibrate.txt", "r") as f:

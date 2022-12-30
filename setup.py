@@ -6,14 +6,13 @@ __version__ = "0.0.1"
 ext_modules = [
     Pybind11Extension("kalmanfilters",
         [
-            "main.cpp",
             "src/linalg/linalg.cpp",
             "src/sensors/sensors.cpp",
-            "src/extended_kalman_filter/ExtendedKalmanFilter.cpp",
-            "src/extended_kalman_filter/ConstantPositionExtendedKalmanFilter.cpp",
-            "src/extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccel.cpp",
-            "src/extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccelGyro.cpp",
-            "src/extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccelGyroMag.cpp"
+            "src/models/ConstantPositionAccel.cpp",
+            "src/models/ConstantVelocityAccel.cpp",
+            "src/models/ConstantVelocityAccelGyro.cpp",
+            "src/models/ConstantVelocityAccelGyroMag.cpp",
+            "main.cpp"
         ],
         include_dirs = ["extern", "src"],
         define_macros = [('VERSION_INFO', __version__)],
