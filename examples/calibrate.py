@@ -1,21 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""
+calibration script for magnetometer
+    1. change values in arduino script to zero.
+    2. run read_serial.py and save data as calibrate.
+    3. run this script to find new values to put into 
+       arduino script.
+"""
+
 mag = []
 
 with open("examples/calibrate.txt", "r") as f:
     for r in f.readlines()[1:]:
-        micros, ax, ay, az, gx, gy, gz, mx, my, mz = r.rstrip().split(",")
+        sensor, data = r.rstrip().split(":")
+        micros, x, y, z = data.split(",")
 
         micros = int(micros)
-        ax = float(ax)
-        ay = float(ay)
-        az = float(az)
-        mx = float(mx)
-        my = float(my)
-        mz = float(mz)
+        x = float(x)
+        y = float(y)
+        z = float(z)
 
-        mag.append([mx, my, mz])
+        if sensor == "mag":
+            mag.append([x, y, z])
 
 fig, ax = plt.subplots(1, 1)
 ax.set_aspect(1)
@@ -49,4 +56,8 @@ ax.scatter([mx - cx for mx, my, mz in mag], [my - cy for mx, my, mz in mag])
 ax.scatter([mx - cx for mx, my, mz in mag], [mz - cz for mx, my, mz in mag])
 ax.scatter([my - cy for mx, my, mz in mag], [mz - cz for mx, my, mz in mag])
 
+plt.show()
+
+plt.plot(np.linalg.norm([[mx - cx, my - cy, mz - cz] for mx, my, mz in mag], axis=1))
+plt.plot(np.arange(len(mag)), np.mean(np.linalg.norm([[mx - cx, my - cy, mz - cz] for mx, my, mz in mag], axis=1)) * np.ones(len(mag)))
 plt.show()

@@ -50,13 +50,13 @@ while True:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros 
 
-            mag = kalmanfilters.sensors.mag(x, y, z, 450.0, 450.0, 450.0)
+            mag = kalmanfilters.sensors.mag(x, y, z, 250.0, 250.0, 250.0)
 
             # run kf step
             kf.predict(dt)
             kf.update(mag)
 
-        print(kf.state, end='\r')
+        print(360.0 - np.mod(np.rad2deg(kf.state[2]), 360.0))
 
     except (KeyboardInterrupt, SerialException) as e:
         print(e)

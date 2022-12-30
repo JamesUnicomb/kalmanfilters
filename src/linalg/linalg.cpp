@@ -39,7 +39,8 @@ void linalg::matcopy(std::vector<std::vector<double>>& a, std::vector<std::vecto
 	}
 }
 
-void linalg::transpose(std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b, int n1, int n2)
+void linalg::transpose(
+	std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b, int n1, int n2)
 {
 	// a is n1 x n2
 	// b is n2 x n1
@@ -116,6 +117,50 @@ void linalg::matmult(
 	// c is n1 x n3
 	setzero(c, n1, n3);
 	matmultacc(a, b, c, n1, n2, n3);
+}
+
+void linalg::vecadd(std::vector<double>& a, std::vector<double>& b, std::vector<double>& c, int n1)
+{
+	// a is n1 x 1
+	// b is n1 x 1
+	// c is n1 x 1
+	int i;
+	for(i = 0; i < n1; i++)
+	{
+		c[i] = a[i] + b[i];
+	}
+}
+
+void linalg::vecsubtract(std::vector<double>& a, std::vector<double>& b, std::vector<double>& c, int n1)
+{
+	// a is n1 x 1
+	// b is n1 x 1
+	// c is n1 x 1
+	int i;
+	for(i = 0; i < n1; i++)
+	{
+		c[i] = a[i] - b[i];
+	}
+}
+
+void linalg::matadd(
+	std::vector<std::vector<double>>& a,
+	std::vector<std::vector<double>>& b,
+	std::vector<std::vector<double>>& c,
+	int n1,
+	int n2)
+{
+	// a is n1 x n2
+	// b is n1 x n2
+	// c is n1 x n2
+	int i, j;
+	for(i = 0; i < n1; i++)
+	{
+		for(j = 0; j < n2; j++)
+		{
+			c[i][j] = a[i][j] + b[i][j];
+		}
+	}
 }
 
 void linalg::matsubtract(

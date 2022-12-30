@@ -3,22 +3,29 @@
 
 namespace sensors
 {
-struct accel
+struct base {
+	base(double x, double y, double z);
+	base(double x, double y, double z, double xunc, double yunc, double zunc);
+    double x, y, z;
+	double xunc, yunc, zunc;
+};
+
+struct accel : base
 {
 	accel(double x, double y, double z);
-	double x, y, z;
+	accel(double x, double y, double z, double xunc, double yunc, double zunc);
 };
 
-struct gyro
+struct gyro : base
 {
 	gyro(double x, double y, double z);
-	double x, y, z;
+	gyro(double x, double y, double z, double xunc, double yunc, double zunc);
 };
 
-struct mag
+struct mag : base
 {
 	mag(double x, double y, double z);
-	double x, y, z;
+	mag(double x, double y, double z, double xunc, double yunc, double zunc);
 };
 }; // namespace sensors
 

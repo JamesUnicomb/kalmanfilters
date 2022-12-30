@@ -4,9 +4,10 @@
 
 #include "nr3.hpp"
 #include "sensors/sensors.hpp"
-#include "extended_kalman_filter/ConstantPositionExtendedKalmanFilter.hpp"
-#include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccel.hpp"
-#include "extended_kalman_filter/ConstantVelocityExtendedKalmanFilterAccelGyro.hpp"
+#include "kalmanfilter/ExtendedKalmanFilter.hpp"
+#include "models/ConstantPositionAccel.hpp"
+#include "models/ConstantVelocityAccelGyro.hpp"
+#include "models/ConstantVelocityAccelGyroMag.hpp"
 
 // clang-format off
 #define STRINGIFY(x) #x
@@ -21,60 +22,56 @@ PYBIND11_MODULE(kalmanfilters, mod) {
     py::module sensors = mod.def_submodule("sensors", "sensors to use as input into Kalman filters.");
     py::class_<sensors::accel>(sensors, "accel")
         .def(py::init<double, double, double>())
+        .def(py::init<double, double, double, double, double, double>())
         .def_readwrite("x", &sensors::accel::x)
         .def_readwrite("y", &sensors::accel::y)
-        .def_readwrite("z", &sensors::accel::z);
+        .def_readwrite("z", &sensors::accel::z)
+        .def_readwrite("xunc", &sensors::accel::xunc)
+        .def_readwrite("yunc", &sensors::accel::yunc)
+        .def_readwrite("zunc", &sensors::accel::zunc);
     py::class_<sensors::gyro>(sensors, "gyro")
         .def(py::init<double, double, double>())
-        .def_readwrite("x", &sensors::gyro::x)
-        .def_readwrite("y", &sensors::gyro::y)
-        .def_readwrite("z", &sensors::gyro::z);
+        .def(py::init<double, double, double, double, double, double>())
+        .def_readwrite("x", &sensors::accel::x)
+        .def_readwrite("y", &sensors::accel::y)
+        .def_readwrite("z", &sensors::accel::z)
+        .def_readwrite("xunc", &sensors::accel::xunc)
+        .def_readwrite("yunc", &sensors::accel::yunc)
+        .def_readwrite("zunc", &sensors::accel::zunc);
     py::class_<sensors::mag>(sensors, "mag")
         .def(py::init<double, double, double>())
-        .def_readwrite("x", &sensors::mag::x)
-        .def_readwrite("y", &sensors::mag::y)
-        .def_readwrite("z", &sensors::mag::z);;
+        .def(py::init<double, double, double, double, double, double>())
+        .def_readwrite("x", &sensors::accel::x)
+        .def_readwrite("y", &sensors::accel::y)
+        .def_readwrite("z", &sensors::accel::z)
+        .def_readwrite("xunc", &sensors::accel::xunc)
+        .def_readwrite("yunc", &sensors::accel::yunc)
+        .def_readwrite("zunc", &sensors::accel::zunc);
 
-    py::class_<ConstantPositionExtendedKalmanFilter>(mod, "ConstantPositionExtendedKalmanFilter")
-        .def(py::init<double, double>())
-        .def("predict", &ConstantPositionExtendedKalmanFilter::predict)
-        .def("update", &ConstantPositionExtendedKalmanFilter::update)
-        .def_readwrite("state", &ConstantPositionExtendedKalmanFilter::state)
-        .def_readwrite("state_unc", &ConstantPositionExtendedKalmanFilter::state_unc)
-        .def_readwrite("jac", &ConstantPositionExtendedKalmanFilter::jac)
-        .def_readwrite("innovation", &ConstantPositionExtendedKalmanFilter::innovation)
-        .def_readwrite("innovation_unc", &ConstantPositionExtendedKalmanFilter::innovation_unc)
-        .def_readwrite("innovation_unc_inv", &ConstantPositionExtendedKalmanFilter::innovation_unc_inv)
-        .def_readwrite("gain", &ConstantPositionExtendedKalmanFilter::gain)
-        .def_readwrite("process_unc", &ConstantPositionExtendedKalmanFilter::process_unc)
-        .def_readwrite("measurement_unc", &ConstantPositionExtendedKalmanFilter::measurement_unc);
-
-    py::class_<ConstantVelocityExtendedKalmanFilterAccel>(mod, "ConstantVelocityExtendedKalmanFilterAccel")
+    typedef ExtendedKalmanFilter<ConstantPositionAccelMotionModel, ConstantPositionAccelMeasurementModel> cpekf;
+    py::class_<cpekf>(mod, "cpekf")
         .def(py::init<double>())
-        .def("predict", &ConstantVelocityExtendedKalmanFilterAccel::predict)
-        .def("update", py::overload_cast<const sensors::accel&, double>(&ConstantVelocityExtendedKalmanFilterAccel::update))
-        .def_readwrite("state", &ConstantVelocityExtendedKalmanFilterAccel::state)
-        .def_readwrite("state_unc", &ConstantVelocityExtendedKalmanFilterAccel::state_unc)
-        .def_readwrite("jac", &ConstantVelocityExtendedKalmanFilterAccel::jac)
-        .def_readwrite("innovation", &ConstantVelocityExtendedKalmanFilterAccel::innovation)
-        .def_readwrite("innovation_unc", &ConstantVelocityExtendedKalmanFilterAccel::innovation_unc)
-        .def_readwrite("innovation_unc_inv", &ConstantVelocityExtendedKalmanFilterAccel::innovation_unc_inv)
-        .def_readwrite("gain", &ConstantVelocityExtendedKalmanFilterAccel::gain)
-        .def_readwrite("process_unc", &ConstantVelocityExtendedKalmanFilterAccel::process_unc);
+        .def("predict", &cpekf::predict)
+        .def("update", &cpekf::update<sensors::accel&>)
+        .def_readwrite("state", &cpekf::state)
+        .def_readwrite("state_unc", &cpekf::state_unc)
+        .def_readwrite("innovation", &cpekf::innovation)
+        .def_readwrite("innovation_unc", &cpekf::innovation_unc)
+        .def_readwrite("dhdx", &cpekf::dhdx);
 
-    py::class_<ConstantVelocityExtendedKalmanFilter>(mod, "ConstantVelocityExtendedKalmanFilter")
+    typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
+    py::class_<cvekf>(mod, "cvekf")
         .def(py::init<double>())
-        .def("predict", &ConstantVelocityExtendedKalmanFilter::predict)
-        .def("update", py::overload_cast<const sensors::accel&, double>(&ConstantVelocityExtendedKalmanFilter::update))
-        .def("update", py::overload_cast<const sensors::gyro&, double>(&ConstantVelocityExtendedKalmanFilter::update))
-        .def_readwrite("state", &ConstantVelocityExtendedKalmanFilter::state)
-        .def_readwrite("state_unc", &ConstantVelocityExtendedKalmanFilter::state_unc)
-        .def_readwrite("jac", &ConstantVelocityExtendedKalmanFilter::jac)
-        .def_readwrite("innovation", &ConstantVelocityExtendedKalmanFilter::innovation)
-        .def_readwrite("innovation_unc", &ConstantVelocityExtendedKalmanFilter::innovation_unc)
-        .def_readwrite("innovation_unc_inv", &ConstantVelocityExtendedKalmanFilter::innovation_unc_inv)
-        .def_readwrite("gain", &ConstantVelocityExtendedKalmanFilter::gain)
-        .def_readwrite("process_unc", &ConstantVelocityExtendedKalmanFilter::process_unc);
+        .def("predict", &cvekf::predict)
+        .def("update", &cvekf::update<sensors::accel&>)
+        .def("update", &cvekf::update<sensors::gyro&>)
+        .def("update", &cvekf::update<sensors::mag&>)
+        .def_readwrite("state", &cvekf::state)
+        .def_readwrite("state_unc", &cvekf::state_unc)
+        .def_readwrite("innovation", &cvekf::innovation)
+        .def_readwrite("innovation_unc", &cvekf::innovation_unc)
+        .def_readwrite("dhdx", &cvekf::dhdx);
+
 
 #ifdef VERSION_INFO
     mod.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

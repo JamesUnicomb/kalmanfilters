@@ -2,3 +2,4 @@ pyserial
 pandas
 numpy
 matplotlib
+ppigrf
