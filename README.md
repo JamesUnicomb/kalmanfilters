@@ -28,4 +28,11 @@ python examples/run_compass.py
 python examples/run_kf.py
 ```
 
+## Run Tests
 
+Currently TODO.
+
+```
+pip install -r test/requirements.txt
+pytest test -rP
+```

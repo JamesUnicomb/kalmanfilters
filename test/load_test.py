@@ -2,10 +2,15 @@ import kalmanfilters
 import numpy as np
 
 
-def test_load_csekf():
-    kf = kalmanfilters.ConstantPositionExtendedKalmanFilter(0.025, 0.05)
+def test_load_cpekf():
+    kf = kalmanfilters.cpekf(0.025)
 
-    assert np.isclose(kf.process_unc, 0.025)
-    assert np.isclose(kf.measurement_unc, 0.05)
     assert np.allclose(kf.state, [0.0, 0.0])
-    assert np.allclose(kf.state_unc, [[1.0, 0.0], [0.0, 1.0]])
+    assert np.allclose(kf.state_unc, (10.0 * np.eye(2)).tolist())
+
+
+def test_load_cvekf():
+    kf = kalmanfilters.cvekf(0.025)
+
+    assert np.allclose(kf.state, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    assert np.allclose(kf.state_unc, (10.0 * np.eye(6)).tolist())
