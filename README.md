@@ -12,8 +12,20 @@ pip install .
 
 ## Run Examples
 
+### Run full 6dof EKF with accelerometer, gyroscope and magnetometer readings
+
 ```
 pip install -r examples/requirements.txt
-python examples/process_data.py
+python examples/cvekf/example1.py
+python examples/cvekf/example2.py
 ```
+
+### Run full 6dof EKF realtime with accelerometer, gyroscope and magnetometer readings
+
+```
+pip install -r examples/requirements.txt
+python examples/run_compass.py
+python examples/run_kf.py
+```
+
 
