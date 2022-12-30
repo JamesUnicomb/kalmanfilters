@@ -77,5 +77,6 @@
         "utility": "cpp",
         "valarray": "cpp",
         "variant": "cpp"
-    }
+    },
+    "python.formatting.provider": "black"
 }

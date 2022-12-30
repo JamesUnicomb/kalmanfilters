@@ -22,29 +22,30 @@ public:
     x = x + K * y
     sigma = (I - K * dh/dx) * sigma
     */
-    
+
 	// x and sigma
 	std::vector<double> state;
 	std::vector<std::vector<double>> state_unc;
 
-    // df/dx, df/dx^T, dh/dx, dh/dx^T
+	// df/dx, df/dx^T, dh/dx, dh/dx^T
 	std::vector<std::vector<double>> dfdx, dfdxT, dhdx, dhdxT;
 
-    // Q and R
-    std::vector<std::vector<double>> process_unc, measure_unc;
+	// Q and R
+	std::vector<std::vector<double>> process_unc, measure_unc;
 
-    // y and S
+	// y and S
 	std::vector<double> innovation;
 	std::vector<std::vector<double>> innovation_unc;
 
-    // K
+	// K
 	std::vector<std::vector<double>> gain;
 
-	ExtendedKalmanFilter(double q) {
+	ExtendedKalmanFilter(double q)
+	{
 		statedim = h.statedim;
 		measuredim = h.measuredim;
-		
-		// set the measurement 
+
+		// set the measurement
 		// noise for the motion model
 		f.q = q;
 
@@ -66,7 +67,8 @@ public:
 		// innovation is Nx1
 		innovation = std::vector<double>(measuredim, 0.0);
 		innovation_unc = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
-		innovation_unc_inv = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
+		innovation_unc_inv =
+			std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
 
 		// fill tmp matrices
 		dfdx = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
@@ -90,11 +92,12 @@ public:
 		tmpunc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
 	}
 
-	void predict(double delta) {
+	void predict(double delta)
+	{
 		f(delta, state);
 		f.derivs(delta, state, dfdx);
 		f.getProcessUncertainty(delta, process_unc);
-		
+
 		linalg::transpose(dfdx, dfdxT, statedim, statedim);
 
 		linalg::matmult(dfdx, state_unc, tmp, statedim, statedim, statedim);
@@ -104,7 +107,8 @@ public:
 	}
 
 	template <typename Z>
-	void update(Z& z) {
+	void update(Z& z)
+	{
 		h(state, z, innovation);
 		h.derivs(state, z, dhdx);
 		h.getMeasurementUncertainty(z, measure_unc);
@@ -124,7 +128,7 @@ public:
 		linalg::matvecmult(gain, innovation, dx, statedim, measuredim);
 		linalg::vecadd(state, dx, state, statedim);
 
-        // update covariance
+		// update covariance
 		linalg::matmult(gain, dhdx, tmp, statedim, measuredim, statedim);
 		linalg::matsubtract(eye, tmp, tmp, statedim, statedim);
 		linalg::matcopy(state_unc, tmpunc, statedim, statedim);
@@ -132,13 +136,13 @@ public:
 	}
 
 private:
-    F f;
+	F f;
 	H h;
 
 	int statedim;
 	int measuredim;
 
-    // temp vectors/matrices for calculations
+	// temp vectors/matrices for calculations
 	std::vector<std::vector<double>> innovation_unc_inv;
 	std::vector<double> dx;
 	std::vector<std::vector<double>> eye, tmp, tmpunc;

@@ -43,7 +43,7 @@ cx = (maxx + minx) / 2.0
 cy = (maxy + miny) / 2.0
 cz = (maxz + minz) / 2.0
 
-print(cx,cy,cz)
+print(cx, cy, cz)
 
 plt.show()
 
@@ -59,5 +59,9 @@ ax.scatter([my - cy for mx, my, mz in mag], [mz - cz for mx, my, mz in mag])
 plt.show()
 
 plt.plot(np.linalg.norm([[mx - cx, my - cy, mz - cz] for mx, my, mz in mag], axis=1))
-plt.plot(np.arange(len(mag)), np.mean(np.linalg.norm([[mx - cx, my - cy, mz - cz] for mx, my, mz in mag], axis=1)) * np.ones(len(mag)))
+plt.plot(
+    np.arange(len(mag)),
+    np.mean(np.linalg.norm([[mx - cx, my - cy, mz - cz] for mx, my, mz in mag], axis=1))
+    * np.ones(len(mag)),
+)
 plt.show()

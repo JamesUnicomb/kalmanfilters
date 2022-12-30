@@ -3,10 +3,11 @@
 
 namespace sensors
 {
-struct base {
+struct base
+{
 	base(double x, double y, double z);
 	base(double x, double y, double z, double xunc, double yunc, double zunc);
-    double x, y, z;
+	double x, y, z;
 	double xunc, yunc, zunc;
 };
 

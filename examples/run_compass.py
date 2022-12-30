@@ -1,12 +1,12 @@
 import serial
 from serial.serialutil import SerialException
 import matplotlib.pyplot as plt
-import numpy as  np
+import numpy as np
 
 import kalmanfilters
 
 
-ser = serial.Serial('/dev/tty.usbmodem205E3072594D1', 9600)
+ser = serial.Serial("/dev/tty.usbmodem205E3072594D1", 9600)
 ser.flushInput()
 
 kf = kalmanfilters.cvekf(25.0)
@@ -17,7 +17,7 @@ while True:
     try:
         ser_bytes = ser.readline()
         decoded_bytes = ser_bytes.decode("utf-8")
-        
+
         sensor, data = decoded_bytes.rstrip().split(":")
         micros, x, y, z = data.split(",")
 
@@ -48,7 +48,7 @@ while True:
 
         elif sensor == "mag":
             dt = (micros - microsprev) * 1e-6
-            microsprev = micros 
+            microsprev = micros
 
             mag = kalmanfilters.sensors.mag(x, y, z, 250.0, 250.0, 250.0)
 

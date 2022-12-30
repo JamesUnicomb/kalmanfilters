@@ -38,7 +38,7 @@ void ConstantVelocityAccelMotionModel::getProcessUncertainty(
 		process_unc[i][i] = delta * delta * delta / 3.0 * q;
 		process_unc[i + 2][i] = delta * delta / 2.0 * q;
 		process_unc[i][i + 2] = delta * delta / 2.0 * q;
-        process_unc[i + 2][i + 2] = delta * q;
+		process_unc[i + 2][i + 2] = delta * q;
 	}
 }
 

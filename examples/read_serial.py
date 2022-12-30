@@ -1,6 +1,6 @@
 import serial
 
-ser = serial.Serial('/dev/tty.usbmodem205E3072594D1', 115200)
+ser = serial.Serial("/dev/tty.usbmodem205E3072594D1", 115200)
 ser.flushInput()
 
 with open("examples/data.txt", "w") as f:

@@ -4,7 +4,8 @@ from setuptools import setup
 __version__ = "0.0.1"
 
 ext_modules = [
-    Pybind11Extension("kalmanfilters",
+    Pybind11Extension(
+        "kalmanfilters",
         [
             "src/linalg/linalg.cpp",
             "src/sensors/sensors.cpp",
@@ -12,11 +13,11 @@ ext_modules = [
             "src/models/ConstantVelocityAccel.cpp",
             "src/models/ConstantVelocityAccelGyro.cpp",
             "src/models/ConstantVelocityAccelGyroMag.cpp",
-            "main.cpp"
+            "main.cpp",
         ],
-        include_dirs = ["extern", "src"],
-        define_macros = [('VERSION_INFO', __version__)],
-        ),
+        include_dirs=["extern", "src"],
+        define_macros=[("VERSION_INFO", __version__)],
+    ),
 ]
 
 setup(
