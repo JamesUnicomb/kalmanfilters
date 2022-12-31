@@ -43,8 +43,8 @@ with open("examples/data/data1.txt", "r") as f:
 
             accpunc.append(s)
 
-            print("state: \n", kf.state)
-            print("state_unc: \n", kf.state_unc)
+            # print("state: \n", kf.state)
+            # print("state_unc: \n", kf.state_unc)
 
 acc = np.array(acc)
 accp = np.array(accp)
