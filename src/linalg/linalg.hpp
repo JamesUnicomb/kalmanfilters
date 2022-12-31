@@ -51,7 +51,7 @@ struct cholesky
 	cholesky(int n);
 	cholesky(std::vector<std::vector<double>>& a);
 	void inverse(std::vector<std::vector<double>>& ainv);
-	void dcmp(std::vector<std::vector<double>>& a);
+	void dcmp();
 };
 // statistial linear algebra routines
 void weightedsum(
@@ -59,7 +59,9 @@ void weightedsum(
 void weightedmult(
 	std::vector<double>& w,
 	std::vector<std::vector<double>>& a,
+	std::vector<double>& abar,
 	std::vector<std::vector<double>>& b,
+	std::vector<double>& bbar,
 	std::vector<std::vector<double>>& c,
 	int n1,
 	int n2,

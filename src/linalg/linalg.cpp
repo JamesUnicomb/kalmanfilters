@@ -174,7 +174,7 @@ linalg::cholesky::cholesky(vector<vector<double>>& a)
 	: n(a.size())
 	, el(a)
 {
-	dcmp(a);
+	dcmp();
 }
 
 void linalg::cholesky::inverse(vector<vector<double>>& ainv)
@@ -199,7 +199,7 @@ void linalg::cholesky::inverse(vector<vector<double>>& ainv)
 		}
 }
 
-void linalg::cholesky::dcmp(vector<vector<double>>& a)
+void linalg::cholesky::dcmp()
 {
 	int i, j, k;
 	double sum;
@@ -244,16 +244,20 @@ void linalg::weightedsum(vector<double>& w, vector<vector<double>>& a, vector<do
 void linalg::weightedmult(
 	vector<double>& w,
 	vector<vector<double>>& a,
+	vector<double>& abar,
 	vector<vector<double>>& b,
+	vector<double>& bbar,
 	vector<vector<double>>& c,
 	int n1,
 	int n2,
 	int n3)
 {
-	// w is n1 x 1
-	// a is n1 x n2
-	// b is n1 x n3
-	// c is n2 x n3
+	// w    is n1 x 1
+	// a    is n1 x n2
+	// abar is n2 x 1
+	// b    is n1 x n3
+	// bbar is n3 x 1
+	// c    is n2 x n3
 	int i, j, k;
 	setzero(c, n2, n3);
 
@@ -263,7 +267,7 @@ void linalg::weightedmult(
 		{
 			for(k = 0; k < n3; k++)
 			{
-				c[j][k] += w[i] * a[i][j] * b[i][k];
+				c[j][k] += w[i] * (a[i][j] - abar[j]) * (b[i][k] - bbar[k]);
 			}
 		}
 	}

@@ -45,10 +45,7 @@ void ConstantVelocityAccelGyroMagMotionModel::getProcessUncertainty(
 }
 
 void ConstantVelocityAccelGyroMagMotionModel::operator()(
-	double delta,
-	std::vector<double>& state,
-	std::vector<std::vector<double>>& jac,
-	std::vector<std::vector<double>>& process_unc)
+	double delta, vector<double>& state, vector<vector<double>>& jac, vector<vector<double>>& process_unc)
 {
 	predict(delta, state);
 	derivs(delta, state, jac);
@@ -133,9 +130,9 @@ void ConstantVelocityAccelGyroMagMeasurementModel::operator()(
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::operator()(
-	std::vector<double>& state,
+	vector<double>& state,
 	sensors::mag& mag,
-	std::vector<double>& y,
+	vector<double>& y,
 	vector<vector<double>>& jac,
 	vector<vector<double>>& measure_unc)
 {

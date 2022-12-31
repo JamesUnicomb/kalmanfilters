@@ -43,10 +43,7 @@ void ConstantVelocityAccelMotionModel::getProcessUncertainty(
 }
 
 void ConstantVelocityAccelMotionModel::operator()(
-	double delta,
-	std::vector<double>& state,
-	std::vector<std::vector<double>>& jac,
-	std::vector<std::vector<double>>& process_unc)
+	double delta, vector<double>& state, vector<vector<double>>& jac, vector<vector<double>>& process_unc)
 {
 	predict(delta, state);
 	derivs(delta, state, jac);
@@ -71,11 +68,11 @@ void ConstantVelocityAccelMeasurementModel::innovation(
 }
 
 void ConstantVelocityAccelMeasurementModel::operator()(
-	std::vector<double>& state,
+	vector<double>& state,
 	sensors::accel& accel,
-	std::vector<double>& y,
-	std::vector<std::vector<double>>& jac,
-	std::vector<std::vector<double>>& measure_unc)
+	vector<double>& y,
+	vector<vector<double>>& jac,
+	vector<vector<double>>& measure_unc)
 {
 	innovation(state, accel, y);
 	derivs(state, accel, jac);

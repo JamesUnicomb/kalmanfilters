@@ -46,10 +46,7 @@ void ConstantVelocityAccelGyroMotionModel::getProcessUncertainty(
 }
 
 void ConstantVelocityAccelGyroMotionModel::operator()(
-	double delta,
-	std::vector<double>& state,
-	std::vector<std::vector<double>>& jac,
-	std::vector<std::vector<double>>& process_unc)
+	double delta, vector<double>& state, vector<vector<double>>& jac, vector<vector<double>>& process_unc)
 {
 	predict(delta, state);
 	derivs(delta, state, jac);
