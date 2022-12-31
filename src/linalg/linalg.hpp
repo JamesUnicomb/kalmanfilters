@@ -43,6 +43,7 @@ void matsubtract(
 	std::vector<std::vector<double>>& c,
 	int n1,
 	int n2);
+// decompositions
 struct cholesky
 {
 	int n;
@@ -52,6 +53,17 @@ struct cholesky
 	void inverse(std::vector<std::vector<double>>& ainv);
 	void dcmp(std::vector<std::vector<double>>& a);
 };
+// statistial linear algebra routines
+void weightedsum(
+	std::vector<double>& w, std::vector<std::vector<double>>& a, std::vector<double>& b, int n1, int n2);
+void weightedmult(
+	std::vector<double>& w,
+	std::vector<std::vector<double>>& a,
+	std::vector<std::vector<double>>& b,
+	std::vector<std::vector<double>>& c,
+	int n1,
+	int n2,
+	int n3);
 }; // namespace linalg
 
 #endif /* _LINALG_HPP_ */

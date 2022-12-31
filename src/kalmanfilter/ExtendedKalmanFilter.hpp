@@ -94,9 +94,7 @@ public:
 
 	void predict(double delta)
 	{
-		f(delta, state);
-		f.derivs(delta, state, dfdx);
-		f.getProcessUncertainty(delta, process_unc);
+		f(delta, state, dfdx, process_unc);
 
 		linalg::transpose(dfdx, dfdxT, statedim, statedim);
 
@@ -109,9 +107,7 @@ public:
 	template <typename Z>
 	void update(Z& z)
 	{
-		h(state, z, innovation);
-		h.derivs(state, z, dhdx);
-		h.getMeasurementUncertainty(z, measure_unc);
+		h(state, z, innovation, dhdx, measure_unc);
 
 		linalg::transpose(dhdx, dhdxT, measuredim, statedim);
 		linalg::matmult(dhdx, state_unc, tmp, measuredim, statedim, statedim);

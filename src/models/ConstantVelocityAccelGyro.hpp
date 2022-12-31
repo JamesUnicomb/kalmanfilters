@@ -5,25 +5,39 @@
 
 struct ConstantVelocityAccelGyroMotionModel
 {
+	void operator()(
+		double delta,
+		std::vector<double>& state,
+		std::vector<std::vector<double>>& jac,
+		std::vector<std::vector<double>>& process_unc);
+
 	void predict(double delta, std::vector<double>& state);
 	void derivs(double delta, std::vector<double>& state, std::vector<std::vector<double>>& jac);
 	void getProcessUncertainty(double delta, std::vector<std::vector<double>>& process_unc);
-	void operator()(double delta, std::vector<double>& state);
+
 	const int statedim = 5;
 	double q;
 };
 
 struct ConstantVelocityAccelGyroMeasurementModel
 {
-	void update(std::vector<double>& state, sensors::accel& accel, std::vector<double>& innovation);
-	void update(std::vector<double>& state, sensors::gyro& gyro, std::vector<double>& innovation);
+	void operator()(
+		std::vector<double>& state,
+		sensors::accel& accel,
+		std::vector<double>& y,
+		std::vector<std::vector<double>>& jac,
+		std::vector<std::vector<double>>& measure_unc);
+	void operator()(
+		std::vector<double>& state,
+		sensors::gyro& gyro,
+		std::vector<double>& y,
+		std::vector<std::vector<double>>& jac,
+		std::vector<std::vector<double>>& measure_unc);
 
-	void operator()(std::vector<double>& state, sensors::accel& accel, std::vector<double>& innovation);
-	void operator()(std::vector<double>& state, sensors::gyro& gyro, std::vector<double>& innovation);
-
+	void innovation(std::vector<double>& state, sensors::accel& accel, std::vector<double>& y);
+	void innovation(std::vector<double>& state, sensors::gyro& gyro, std::vector<double>& y);
 	void derivs(std::vector<double>& state, sensors::accel& accel, std::vector<std::vector<double>>& jac);
 	void derivs(std::vector<double>& state, sensors::gyro& gyro, std::vector<std::vector<double>>& jac);
-
 	void getMeasurementUncertainty(sensors::accel& accel, std::vector<std::vector<double>>& measure_unc);
 	void getMeasurementUncertainty(sensors::gyro& gyro, std::vector<std::vector<double>>& measure_unc);
 

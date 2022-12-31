@@ -27,13 +27,19 @@ void ConstantPositionAccelMotionModel::getProcessUncertainty(
 	}
 }
 
-void ConstantPositionAccelMotionModel::operator()(double delta, std::vector<double>& state)
+void ConstantPositionAccelMotionModel::operator()(
+	double delta,
+	std::vector<double>& state,
+	std::vector<std::vector<double>>& jac,
+	std::vector<std::vector<double>>& process_unc)
 {
 	predict(delta, state);
+	derivs(delta, state, jac);
+	getProcessUncertainty(delta, process_unc);
 }
 
-void ConstantPositionAccelMeasurementModel::update(
-	std::vector<double>& state, sensors::accel& accel, std::vector<double>& innovation)
+void ConstantPositionAccelMeasurementModel::innovation(
+	std::vector<double>& state, sensors::accel& accel, std::vector<double>& y)
 {
 	// run trig functions once
 	double s0, c0, c1, s1;
@@ -44,15 +50,21 @@ void ConstantPositionAccelMeasurementModel::update(
 
 	// calculate innovation
 	// y = z - h(x)
-	innovation[0] = accel.x - (-s1 * g);
-	innovation[1] = accel.y - (s0 * c1 * g);
-	innovation[2] = accel.z - (c0 * c1 * g);
+	y[0] = accel.x - (-s1 * g);
+	y[1] = accel.y - (s0 * c1 * g);
+	y[2] = accel.z - (c0 * c1 * g);
 }
 
 void ConstantPositionAccelMeasurementModel::operator()(
-	std::vector<double>& state, sensors::accel& accel, std::vector<double>& innovation)
+	std::vector<double>& state,
+	sensors::accel& accel,
+	std::vector<double>& y,
+	std::vector<std::vector<double>>& jac,
+	std::vector<std::vector<double>>& measure_unc)
 {
-	update(state, accel, innovation);
+	innovation(state, accel, y);
+	derivs(state, accel, jac);
+	getMeasurementUncertainty(accel, measure_unc);
 }
 
 void ConstantPositionAccelMeasurementModel::derivs(
