@@ -28,6 +28,8 @@ python examples/run_compass.py
 python examples/run_kf.py
 ```
 
+[![Extended Kalman Filter](https://img.youtube.com/vi/3IVuh-_xESg/0.jpg)](https://www.youtube.com/watch?v=3IVuh-_xESg)
+
 ## Run Tests
 
 Currently TODO.
