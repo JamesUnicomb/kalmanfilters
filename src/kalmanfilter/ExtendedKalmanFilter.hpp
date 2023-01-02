@@ -41,15 +41,15 @@ public:
 	std::vector<std::vector<double>> gain;
 
 	ExtendedKalmanFilter(double q)
+		: statedim(h.statedim)
+		, measuredim(h.measuredim)
+		, svd(h.measuredim, h.measuredim)
 	{
-		statedim = h.statedim;
-		measuredim = h.measuredim;
+		int i;
 
-		// set the measurement
-		// noise for the motion model
+		// set motion uncertainty
 		f.q = q;
 
-		int i;
 		// N is state dimension
 		// M is measurement dimension
 		// state is Nx1 and sigma is NxN
@@ -115,8 +115,8 @@ public:
 		linalg::matadd(innovation_unc, measure_unc, innovation_unc, measuredim, measuredim);
 
 		// calculate kalman gain
-		linalg::cholesky cho(innovation_unc);
-		cho.inverse(innovation_unc_inv);
+		svd.dcmp(innovation_unc);
+		svd.inverse(innovation_unc_inv);
 		linalg::matmult(dhdxT, innovation_unc_inv, tmp, statedim, measuredim, measuredim);
 		linalg::matmult(state_unc, tmp, gain, statedim, statedim, measuredim);
 
@@ -142,6 +142,9 @@ private:
 	std::vector<std::vector<double>> innovation_unc_inv;
 	std::vector<double> dx;
 	std::vector<std::vector<double>> eye, tmp, tmpunc;
+
+	// matrix inversion
+	linalg::SVD svd;
 };
 
 #endif /* _EKF_HPP_ */

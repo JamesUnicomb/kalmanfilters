@@ -40,6 +40,9 @@ struct ConstantVelocityAccelGyroMagMeasurementModel
 		std::vector<std::vector<double>>& jac,
 		std::vector<std::vector<double>>& measure_unc);
 
+	void predict(std::vector<double>& state, sensors::accel& accel, std::vector<double>& h);
+	void predict(std::vector<double>& state, sensors::gyro& gyro, std::vector<double>& h);
+	void predict(std::vector<double>& state, sensors::mag& mag, std::vector<double>& h);
 	void innovation(std::vector<double>& state, sensors::accel& accel, std::vector<double>& y);
 	void innovation(std::vector<double>& state, sensors::gyro& gyro, std::vector<double>& y);
 	void innovation(std::vector<double>& state, sensors::mag& mag, std::vector<double>& y);

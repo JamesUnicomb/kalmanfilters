@@ -8,6 +8,8 @@ ext_modules = [
         "kalmanfilters",
         [
             "src/linalg/linalg.cpp",
+            "src/linalg/cholesky.cpp",
+            "src/linalg/svd.cpp",
             "src/sensors/sensors.cpp",
             "src/models/ConstantPositionAccel.cpp",
             "src/models/ConstantVelocityAccel.cpp",

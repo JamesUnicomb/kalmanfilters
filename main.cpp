@@ -5,6 +5,7 @@
 #include "nr3.hpp"
 #include "sensors/sensors.hpp"
 #include "kalmanfilter/ExtendedKalmanFilter.hpp"
+#include "kalmanfilter/UnscentedKalmanFilter.hpp"
 #include "models/ConstantPositionAccel.hpp"
 #include "models/ConstantVelocityAccelGyro.hpp"
 #include "models/ConstantVelocityAccelGyroMag.hpp"
@@ -71,6 +72,21 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def_readwrite("innovation", &cvekf::innovation)
         .def_readwrite("innovation_unc", &cvekf::innovation_unc)
         .def_readwrite("dhdx", &cvekf::dhdx);
+
+    typedef UnscentedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvukf;
+    py::class_<cvukf>(mod, "cvukf")
+        .def(py::init<double>())
+        .def("predict", &cvukf::predict)
+        .def("update", &cvukf::update<sensors::accel&>)
+        .def("update", &cvukf::update<sensors::gyro&>)
+        .def("update", &cvukf::update<sensors::mag&>)
+        .def_readwrite("state", &cvukf::state)
+        .def_readwrite("state_unc", &cvukf::state_unc)
+        .def_readwrite("state_unc_sqrtm", &cvukf::state_unc_sqrtm)
+        .def_readwrite("innovation", &cvukf::innovation)
+        .def_readwrite("innovation_unc", &cvukf::innovation_unc)
+        .def_readwrite("state_sigma_points", &cvukf::state_sigma_points)
+        .def_readwrite("measurement_sigma_points", &cvukf::measurement_sigma_points);
 
 
 #ifdef VERSION_INFO

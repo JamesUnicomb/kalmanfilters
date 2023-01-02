@@ -52,6 +52,59 @@ void ConstantVelocityAccelGyroMagMotionModel::operator()(
 	getProcessUncertainty(delta, process_unc);
 }
 
+void ConstantVelocityAccelGyroMagMeasurementModel::predict(
+	vector<double>& state, sensors::accel& accel, vector<double>& h)
+{
+	// run trig functions once
+	double s0, c0, s1, c1;
+	s0 = sin(state[0]);
+	c0 = cos(state[0]);
+	s1 = sin(state[1]);
+	c1 = cos(state[1]);
+
+	// calculate expected measurement
+	// h(x)
+	h[0] = -s1 * g;
+	h[1] = s0 * c1 * g;
+	h[2] = c0 * c1 * g;
+}
+
+void ConstantVelocityAccelGyroMagMeasurementModel::predict(
+	vector<double>& state, sensors::gyro& gyro, vector<double>& h)
+{
+	// run trig functions once
+	double s0, c0, s1, c1;
+	s0 = sin(state[0]);
+	c0 = cos(state[0]);
+	s1 = sin(state[1]);
+	c1 = cos(state[1]);
+
+	// calculate expected measurement
+	// h(x)
+	h[0] = state[3] + s1 * state[5];
+	h[1] = c0 * state[4] + s0 * c1 * state[5];
+	h[2] = -s0 * state[4] + c0 * c1 * state[5];
+}
+
+void ConstantVelocityAccelGyroMagMeasurementModel::predict(
+	vector<double>& state, sensors::mag& mag, vector<double>& h)
+{
+	// run trig functions once
+	double s0, c0, s1, c1, s2, c2;
+	s0 = sin(state[0]);
+	c0 = cos(state[0]);
+	s1 = sin(state[1]);
+	c1 = cos(state[1]);
+	s2 = sin(state[2]);
+	c2 = cos(state[2]);
+
+	// calculate expected measurement
+	// h(x)
+	h[0] = c2 * c1 * mx + s2 * c1 * my - s1 * mz;
+	h[1] = (c2 * s1 * s0 - s2 * c0) * mx + (s2 * s1 * s0 + c2 * c0) * my + c1 * s0 * mz;
+	h[2] = (c2 * s1 * c0 + s2 * s0) * mx + (s2 * s1 * c0 - c2 * s0) * my + c1 * c0 * mz;
+}
+
 void ConstantVelocityAccelGyroMagMeasurementModel::innovation(
 	vector<double>& state, sensors::accel& accel, vector<double>& y)
 {
