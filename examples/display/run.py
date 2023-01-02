@@ -29,6 +29,7 @@ def get_rot_mat(phi, theta, psi):
         [-sin(theta), sin(phi) * cos(theta), cos(phi) * cos(theta), 0.0],
         [0.0, 0.0, 0.0, 1.0],
     ]
+
     return R
 
 
@@ -44,24 +45,10 @@ axis_verts = (
 axes = ((0, 1), (2, 3), (4, 5))
 
 axis_colors = (
-    (1.0, 0.0, 0.0),  # Red
-    (0.0, 1.0, 0.0),  # Green
-    (0.0, 0.0, 1.0),  # Blue
+    (0.0, 1.0, 0.0),
+    (1.0, 0.0, 0.0),
+    (0.0, 0.0, 1.0),
 )
-
-
-"""
-       5____________6
-       /           /|
-      /           / |
-    1/__________2/  |
-    |           |   |
-    |           |   |
-    |           |   7
-    |           |  /
-    |           | /
-    0___________3/
-"""
 
 cube_verts = (
     (-3.0, -3.0, 3.0),
@@ -90,21 +77,21 @@ cube_edges = (
 )
 
 cube_surfaces = (
-    (0, 1, 2, 3),  # Front
-    (3, 2, 6, 7),  # Right
-    (7, 6, 5, 4),  # Left
-    (4, 5, 1, 0),  # Back
-    (1, 5, 6, 2),  # Top
-    (4, 0, 3, 7),  # Bottom
+    (0, 1, 2, 3),
+    (3, 2, 6, 7),
+    (7, 6, 5, 4),
+    (4, 5, 1, 0),
+    (1, 5, 6, 2),
+    (4, 0, 3, 7),
 )
 
 cube_colors = (
-    (0.0, 0.318, 0.729),  # Blue
-    (0.769, 0.118, 0.227),  # Red
-    (0.0, 0.318, 0.729),  # Blue
-    (0.769, 0.118, 0.227),  # Red
-    (0.0, 0.62, 0.376),  # Green
-    (0.0, 0.62, 0.376),  # Green
+    (0.0, 0.318, 0.729),
+    (0.0, 0.62, 0.376),
+    (0.0, 0.318, 0.729),
+    (0.0, 0.62, 0.376),
+    (0.769, 0.118, 0.227),
+    (0.769, 0.118, 0.227),
 )
 
 
@@ -142,7 +129,7 @@ def main():
     microsprev = 0.0
 
     pygame.init()
-    display = (800, 600)
+    display = (1280, 700)
     pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 
     # Using depth test to make sure closer colors are shown over further ones
@@ -159,6 +146,8 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+
+        gluLookAt(7.0, -7.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
 
         try:
             ser_bytes = ser.readline()
@@ -213,7 +202,7 @@ def main():
             pass
 
         glMatrixMode(GL_MODELVIEW)
-        rot = np.array(get_rot_mat(phi, -psi, theta))
+        rot = np.array(get_rot_mat(phi, theta, -psi))
         glLoadMatrixf(rot)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
