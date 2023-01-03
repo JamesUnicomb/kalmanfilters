@@ -3,7 +3,13 @@ import matplotlib.pyplot as plt
 
 import kalmanfilters
 
-kf = kalmanfilters.cpekf(0.25)
+state = [0.0, 0.0]
+state_unc = [
+    [10.0, 0.0],
+    [0.0, 10.0],
+]
+
+kf = kalmanfilters.cpekf(0.25, state, state_unc)
 
 microsprev = 0.0
 

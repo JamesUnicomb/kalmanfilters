@@ -60,12 +60,16 @@ public:
 	std::vector<double> wm;
 	std::vector<double> wc;
 
-	UnscentedKalmanFilter(double q)
-		: statedim(h.statedim)
+	UnscentedKalmanFilter(double q, std::vector<double> state, std::vector<std::vector<double>> state_unc)
+		: state(state)
+		, state_unc(state_unc)
+		, statedim(h.statedim)
 		, measuredim(h.measuredim)
 		, svdstate(h.statedim, h.statedim)
 		, svdinnovation(h.measuredim, h.measuredim)
 	{
+		int i;
+
 		sigmadim = 2 * statedim + 1;
 
 		// ukf parameters
@@ -84,12 +88,6 @@ public:
 		// noise for the motion model
 		f.q = q;
 
-		int i;
-		// N is state dimension
-		// M is measurement dimension
-		// state is Nx1 and sigma is NxN
-		state = std::vector<double>(statedim, 0.0);
-		state_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
 		state_unc_sqrtm = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
 		for(i = 0; i < statedim; i++)
 		{

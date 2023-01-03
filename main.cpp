@@ -51,7 +51,7 @@ PYBIND11_MODULE(kalmanfilters, mod) {
 
     typedef ExtendedKalmanFilter<ConstantPositionAccelMotionModel, ConstantPositionAccelMeasurementModel> cpekf;
     py::class_<cpekf>(mod, "cpekf")
-        .def(py::init<double>())
+        .def(py::init<double, vector<double>, vector<vector<double>>>())
         .def("predict", &cpekf::predict)
         .def("update", &cpekf::update<sensors::accel&>)
         .def_readwrite("state", &cpekf::state)
@@ -62,7 +62,7 @@ PYBIND11_MODULE(kalmanfilters, mod) {
 
     typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
     py::class_<cvekf>(mod, "cvekf")
-        .def(py::init<double>())
+        .def(py::init<double, vector<double>, vector<vector<double>>>())
         .def("predict", &cvekf::predict)
         .def("update", &cvekf::update<sensors::accel&>)
         .def("update", &cvekf::update<sensors::gyro&>)
@@ -75,7 +75,7 @@ PYBIND11_MODULE(kalmanfilters, mod) {
 
     typedef UnscentedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvukf;
     py::class_<cvukf>(mod, "cvukf")
-        .def(py::init<double>())
+        .def(py::init<double, vector<double>, vector<vector<double>>>())
         .def("predict", &cvukf::predict)
         .def("update", &cvukf::update<sensors::accel&>)
         .def("update", &cvukf::update<sensors::gyro&>)

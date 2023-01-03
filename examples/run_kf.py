@@ -9,7 +9,17 @@ import kalmanfilters
 ser = serial.Serial("/dev/tty.usbmodem205E3072594D1", 9600)
 ser.flushInput()
 
-kf = kalmanfilters.cvekf(25.0)
+state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+state_unc = [
+    [10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    [0.0, 10.0, 0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 10.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+]
+
+kf = kalmanfilters.cvekf(25.0, state, state_unc)
 
 microsprev = 0.0
 

@@ -40,8 +40,10 @@ public:
 	// K
 	std::vector<std::vector<double>> gain;
 
-	ExtendedKalmanFilter(double q)
-		: statedim(h.statedim)
+	ExtendedKalmanFilter(double q, std::vector<double> state, std::vector<std::vector<double>> state_unc)
+		: state(state)
+		, state_unc(state_unc)
+		, statedim(h.statedim)
 		, measuredim(h.measuredim)
 		, svd(h.measuredim, h.measuredim)
 	{
@@ -49,16 +51,6 @@ public:
 
 		// set motion uncertainty
 		f.q = q;
-
-		// N is state dimension
-		// M is measurement dimension
-		// state is Nx1 and sigma is NxN
-		state = std::vector<double>(statedim, 0.0);
-		state_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
-		for(i = 0; i < statedim; i++)
-		{
-			state_unc[i][i] = 10.0;
-		}
 
 		// process and measurement uncertainty matrices
 		process_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
