@@ -153,7 +153,6 @@ plt.show()
 
 mg = np.array(mg)
 mgp = np.array(mgp)
-mgp2 = np.array(mgp2)
 mgpunc = np.array(mgpunc)
 
 fig, ax = plt.subplots(3, 1)
