@@ -134,7 +134,7 @@ def main():
         [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
     ]
 
-    kf = kalmanfilters.cvekf(5.0)
+    kf = kalmanfilters.cvekf(5.0, state, state_unc)
 
     microsprev = 0.0
 
