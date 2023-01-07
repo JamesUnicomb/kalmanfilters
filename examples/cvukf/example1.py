@@ -30,7 +30,6 @@ dvpunc = []
 tmg = []
 mg = []
 mgp = []
-mgp2 = []
 mgpunc = []
 
 with open("examples/data/data1.txt", "r") as f:
@@ -162,7 +161,6 @@ fig, ax = plt.subplots(3, 1)
 for i in range(3):
     ax[i].scatter(tmg, mg[:, i])
     ax[i].plot(tmg, mgp[:, i])
-    # ax[i].plot(tmg, mgp2[:,i])
     ax[i].fill_between(
         tmg,
         mgp[:, i] - 2.0 * np.sqrt(mgpunc[:, i, i]),

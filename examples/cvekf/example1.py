@@ -30,7 +30,6 @@ dvpunc = []
 tmg = []
 mg = []
 mgp = []
-mgp2 = []
 mgpunc = []
 
 with open("examples/data/data1.txt", "r") as f:
