@@ -30,9 +30,9 @@ void ConstantPositionAccelMotionModel::getProcessUncertainty(
 void ConstantPositionAccelMotionModel::operator()(
 	double delta, vector<double>& state, vector<vector<double>>& jac, vector<vector<double>>& process_unc)
 {
-	predict(delta, state);
 	derivs(delta, state, jac);
 	getProcessUncertainty(delta, process_unc);
+	predict(delta, state);
 }
 
 void ConstantPositionAccelMeasurementModel::innovation(

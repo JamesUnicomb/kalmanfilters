@@ -121,6 +121,9 @@ public:
 		linalg::matsubtract(eye, tmp, tmp, statedim, statedim);
 		linalg::matcopy(state_unc, tmpunc, statedim, statedim);
 		linalg::matmult(tmp, tmpunc, state_unc, statedim, statedim, statedim);
+
+		// update normalization routine
+		h.final(state, state_unc);
 	}
 
 private:

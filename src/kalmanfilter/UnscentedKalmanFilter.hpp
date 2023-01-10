@@ -213,6 +213,9 @@ public:
 		linalg::matmult(innovation_unc, gainT, tmp, measuredim, measuredim, statedim);
 		linalg::matmult(gain, tmp, tmpunc, statedim, measuredim, statedim);
 		linalg::matsubtract(state_unc, tmpunc, state_unc, statedim, statedim);
+
+		// update normalization routine
+		h.final(state, state_unc);
 	}
 
 private:

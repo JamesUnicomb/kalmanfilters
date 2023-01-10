@@ -31,6 +31,7 @@ struct ConstantPositionAccelMeasurementModel
 	void innovation(std::vector<double>& state, sensors::accel& accel, std::vector<double>& y);
 	void derivs(std::vector<double>& state, sensors::accel& accel, std::vector<std::vector<double>>& jac);
 	void getMeasurementUncertainty(sensors::accel& accel, std::vector<std::vector<double>>& measure_unc);
+	void final(std::vector<double>& state, std::vector<std::vector<double>>& state_unc) { }
 
 	const int statedim = 2;
 	const int measuredim = 3;
