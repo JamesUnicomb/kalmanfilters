@@ -135,7 +135,7 @@ for i in range(3):
     ax[i].scatter(tdv, dv[:, i])
     ax[i].plot(tdv, dvp[:, i])
     ax[i].fill_between(
-        1e-6 * (np.array(tdv) - tdv[0]),
+        tdv,
         dvp[:, i] - 2.0 * np.sqrt(dvpunc[:, i, i]),
         dvp[:, i] + 2.0 * np.sqrt(dvpunc[:, i, i]),
         alpha=0.2,
