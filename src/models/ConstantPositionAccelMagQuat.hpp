@@ -40,6 +40,7 @@ struct ConstantPositionAccelMagQuatMeasurementModel
 	void derivs(std::vector<double>& state, sensors::mag& mag, std::vector<std::vector<double>>& jac);
 	void getMeasurementUncertainty(sensors::accel& accel, std::vector<std::vector<double>>& measure_unc);
 	void getMeasurementUncertainty(sensors::mag& mag, std::vector<std::vector<double>>& measure_unc);
+	void final(std::vector<double>& state, std::vector<std::vector<double>>& state_unc) { }
 
 	const int statedim = 4;
 	const int measuredim = 3;

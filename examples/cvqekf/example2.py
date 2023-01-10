@@ -47,7 +47,7 @@ with open("examples/data/data2.txt", "r") as f:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            accel = kalmanfilters.sensors.accel(x, y, z, 0.25, 0.25, 0.25)
+            accel = kalmanfilters.sensors.accel(x, y, z, 0.5, 0.5, 0.5)
 
             # run kf step
             kf.predict(dt)
@@ -83,7 +83,7 @@ with open("examples/data/data2.txt", "r") as f:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            mag = kalmanfilters.sensors.mag(x, y, z, 100.0, 100.0, 100.0)
+            mag = kalmanfilters.sensors.mag(x, y, z, 400.0, 400.0, 400.0)
 
             # run kf step
             kf.predict(dt)
@@ -99,15 +99,7 @@ with open("examples/data/data2.txt", "r") as f:
             )
             mgpunc.append(s)
 
-        x = kf.state
-        l = np.linalg.norm(x[0:4])
-        x[0] *= 1.0 / l
-        x[1] *= 1.0 / l
-        x[2] *= 1.0 / l
-        x[3] *= 1.0 / l
-        kf.state = x
-
-        print("state:     \n", kf.state)
+        # print("state:     \n", kf.state)
         # print('state_unc: \n', kf.state_unc)
 
 acc = np.array(acc)
@@ -137,36 +129,22 @@ dv = np.array(dv)
 dvp = np.array(dvp)
 dvpunc = np.array(dvpunc)
 
-fig, ax = plt.subplots(3, 1)
+fig, ax = plt.subplots(3, 1, figsize=(8, 5))
 
 for i in range(3):
     ax[i].scatter(tdv, dv[:, i])
     ax[i].plot(tdv, dvp[:, i])
     ax[i].fill_between(
-        tdv,
+        1e-6 * (np.array(tdv) - tdv[0]),
         dvp[:, i] - 2.0 * np.sqrt(dvpunc[:, i, i]),
         dvp[:, i] + 2.0 * np.sqrt(dvpunc[:, i, i]),
         alpha=0.2,
         color="C0",
     )
 
-ax[0].set_ylim(-5.0, 5.0)
-ax[1].set_ylim(-5.0, 5.0)
-ax[2].set_ylim(-5.0, 5.0)
-
-plt.show()
-
-fig, ax = plt.subplots(1)
-
-for i in range(3):
-    ax.plot(tdv, np.linalg.norm(dv - dvp, axis=1))
-    ax.fill_between(
-        tdv,
-        np.zeros_like(tdv),
-        2.0 * np.sqrt(dvpunc[:, 0, 0] + dvpunc[:, 1, 1] + dvpunc[:, 1, 1]),
-        alpha=0.2,
-        color="C0",
-    )
+ax[0].set_ylim(-7.0, 7.0)
+ax[1].set_ylim(-7.0, 7.0)
+ax[2].set_ylim(-7.0, 7.0)
 
 plt.show()
 

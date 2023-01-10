@@ -14,7 +14,7 @@ state_unc = [
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
 ]
 
-kf = kalmanfilters.cvqekf(5.0, state, state_unc)
+kf = kalmanfilters.cvqekf(2.0, state, state_unc)
 
 microsprev = 0.0
 
@@ -99,15 +99,7 @@ with open("examples/data/data1.txt", "r") as f:
             )
             mgpunc.append(s)
 
-        x = kf.state
-        l = np.linalg.norm(x[0:4])
-        x[0] *= 1.0 / l
-        x[1] *= 1.0 / l
-        x[2] *= 1.0 / l
-        x[3] *= 1.0 / l
-        kf.state = x
-
-        print("state:     \n", kf.state)
+        # print("state:     \n", kf.state)
         # print('state_unc: \n', kf.state_unc)
 
 acc = np.array(acc)

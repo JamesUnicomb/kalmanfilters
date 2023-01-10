@@ -1,6 +1,7 @@
 #ifndef _CVACCLGYROMAGQUATMODEL_HPP_
 #define _CVACCLGYROMAGQUATMODEL_HPP_
 #include <vector>
+#include <cmath>
 #include "sensors/sensors.hpp"
 
 struct ConstantVelocityAccelGyroMagQuatMotionModel
@@ -41,9 +42,6 @@ struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 		std::vector<std::vector<double>>& jac,
 		std::vector<std::vector<double>>& measure_unc);
 
-	void predict(std::vector<double>& state, sensors::accel& accel, std::vector<double>& h);
-	void predict(std::vector<double>& state, sensors::gyro& gyro, std::vector<double>& h);
-	void predict(std::vector<double>& state, sensors::mag& mag, std::vector<double>& h);
 	void innovation(std::vector<double>& state, sensors::accel& accel, std::vector<double>& y);
 	void innovation(std::vector<double>& state, sensors::gyro& gyro, std::vector<double>& y);
 	void innovation(std::vector<double>& state, sensors::mag& mag, std::vector<double>& y);
@@ -53,6 +51,21 @@ struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 	void getMeasurementUncertainty(sensors::accel& accel, std::vector<std::vector<double>>& measure_unc);
 	void getMeasurementUncertainty(sensors::gyro& gyro, std::vector<std::vector<double>>& measure_unc);
 	void getMeasurementUncertainty(sensors::mag& mag, std::vector<std::vector<double>>& measure_unc);
+	void final(std::vector<double>& state, std::vector<std::vector<double>>& state_unc)
+	{
+		// normalize quaternion
+		double qn = 0;
+		double qw, qx, qy, qz;
+		qw = state[0];
+		qx = state[1];
+		qy = state[2];
+		qz = state[3];
+		qn = sqrt(qw * qw + qx * qx + qy * qy + qz * qz);
+		state[0] *= 1.0 / qn;
+		state[1] *= 1.0 / qn;
+		state[2] *= 1.0 / qn;
+		state[3] *= 1.0 / qn;
+	}
 
 	const int statedim = 7;
 	const int measuredim = 3;

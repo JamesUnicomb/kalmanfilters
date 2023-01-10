@@ -40,6 +40,7 @@ struct ConstantVelocityAccelGyroMeasurementModel
 	void derivs(std::vector<double>& state, sensors::gyro& gyro, std::vector<std::vector<double>>& jac);
 	void getMeasurementUncertainty(sensors::accel& accel, std::vector<std::vector<double>>& measure_unc);
 	void getMeasurementUncertainty(sensors::gyro& gyro, std::vector<std::vector<double>>& measure_unc);
+	void final(std::vector<double>& state, std::vector<std::vector<double>>& state_unc) { }
 
 	const int statedim = 5;
 	const int measuredim = 3;
