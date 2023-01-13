@@ -124,17 +124,18 @@ def main():
     ser = serial.Serial("/dev/tty.usbmodem205E3072594D1", 9600)
     ser.flushInput()
 
-    state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    state = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     state_unc = [
-        [10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 10.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 10.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+        [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
     ]
 
-    kf = kalmanfilters.cvekf(5.0, state, state_unc)
+    kf = kalmanfilters.cvqekf(5.0, state, state_unc)
 
     microsprev = 0.0
 
@@ -157,7 +158,7 @@ def main():
                 pygame.quit()
                 quit()
 
-        gluLookAt(7.0, -7.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+        gluLookAt(7.0, 7.0, -7.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0)
 
         try:
             ser_bytes = ser.readline()
@@ -195,14 +196,14 @@ def main():
                 dt = (micros - microsprev) * 1e-6
                 microsprev = micros
 
-                mag = kalmanfilters.sensors.mag(x, y, z, 450.0, 450.0, 450.0)
+                mag = kalmanfilters.sensors.mag(x, y, z, 45.0, 45.0, 45.0)
 
                 # run kf step
                 kf.predict(dt)
                 kf.update(mag)
 
             # print(kf.state, end="\r")
-            phi, theta, psi, _, _, _ = kf.state
+            qw, qx, qy, qz, _, _, _ = kf.state
 
         except (KeyboardInterrupt, SerialException) as e:
             print(e)
@@ -212,7 +213,7 @@ def main():
             pass
 
         glMatrixMode(GL_MODELVIEW)
-        rot = np.array(get_rot_mat(phi, theta, -psi))
+        rot = np.array(kalmanfilters.quaternion.q_to_mat4([qw, qx, qy, qz]))
         glLoadMatrixf(rot)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
