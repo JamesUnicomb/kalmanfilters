@@ -109,4 +109,7 @@ if print_process_noise:
         if i > 3 and j < 4:
             print("process_unc[", i, "][", j, "] = q/2.0 * delta * delta * (", r, ");")
         if i > 3 and j > 3:
-            print("process_unc[", i, "][", j, "] = q * delta * (", r, ");")
+            if r != 0:
+                print("process_unc[", i, "][", j, "] = q * delta;")
+            else:
+                print("process_unc[", i, "][", j, "] = 0.0;")
