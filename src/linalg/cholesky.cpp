@@ -8,17 +8,17 @@ using namespace std;
 linalg::cholesky::cholesky(int n)
 	: n(n)
 {
-	el = vector<vector<double>>(n, vector<double>(n, 0.0));
+	el = Matrix(n, n, 0.0);
 }
 
-linalg::cholesky::cholesky(vector<vector<double>>& a)
-	: n(a.size())
+linalg::cholesky::cholesky(Matrix& a)
+	: n(a.nrows())
 	, el(a)
 {
 	dcmp();
 }
 
-void linalg::cholesky::inverse(vector<vector<double>>& ainv)
+void linalg::cholesky::inverse(Matrix& ainv)
 {
 	int i, j, k;
 	double sum;
@@ -65,7 +65,7 @@ void linalg::cholesky::dcmp()
 			el[j][i] = 0.;
 }
 
-void linalg::cholesky::dcmp(std::vector<std::vector<double>>& a)
+void linalg::cholesky::dcmp(Matrix& a)
 {
 	int i, j;
 	for(i = 0; i < n; i++)

@@ -55,12 +55,12 @@ with open("examples/data/data2.txt", "r") as f:
 
             tacc.append(micros)
             acc.append([x, y, z])
-            accp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
-            jac = kf.dhdx
-            s = kf.innovation_unc
-            accpunc.append(s)
+            # accp.append(
+            #     [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
+            # )
+            # jac = kf.dhdx
+            # s = kf.innovation_unc
+            # accpunc.append(s)
 
         elif sensor == "gyro":
             # dt = (micros - microsprev) * 1e-6
@@ -75,9 +75,9 @@ with open("examples/data/data2.txt", "r") as f:
             tdv.append(micros)
             dv.append([x, y, z])
             dvp.append([kf.state[4], kf.state[5], kf.state[6]])
-            jac = kf.dhdx
-            s = kf.innovation_unc
-            dvpunc.append(np.eye(3).tolist())
+            # jac = kf.dhdx
+            # s = kf.innovation_unc
+            # dvpunc.append(np.eye(3).tolist())
 
         elif sensor == "mag":
             dt = (micros - microsprev) * 1e-6
@@ -89,15 +89,15 @@ with open("examples/data/data2.txt", "r") as f:
             kf.predict(dt)
             kf.update(mag)
 
-            jac = kf.dhdx
-            s = kf.innovation_unc
+            # jac = kf.dhdx
+            # s = kf.innovation_unc
 
             tmg.append(micros)
             mg.append([x, y, z])
-            mgp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
-            mgpunc.append(s)
+            # mgp.append(
+            #     [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
+            # )
+            # mgpunc.append(s)
 
         # print("state:     \n", kf.state)
         # print('state_unc: \n', kf.state_unc)

@@ -4,13 +4,12 @@
 #include <vector>
 #include <exception>
 #include <cmath>
+#include "linalg/linalg.hpp"
 
 namespace quaternion
 {
-void q_to_euler(std::vector<double>& q, std::vector<double>& euler);
-std::vector<double> q_to_euler(std::vector<double> q);
-void q_to_mat4(std::vector<double>& q, std::vector<std::vector<double>>& mat);
-std::vector<std::vector<double>> q_to_mat4(std::vector<double> q);
+void q_to_euler(linalg::Vector& q, linalg::Vector& euler);
+void q_to_mat4(linalg::Vector& q, linalg::Matrix& mat);
 }; // namespace quaternion
 
 #endif
