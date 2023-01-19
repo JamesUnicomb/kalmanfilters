@@ -10,11 +10,9 @@ linalg::Vector::Vector()
 { }
 
 linalg::Vector::Vector(vector<double>& a)
-	: nn(0)
-	, v(NULL)
+	: nn(a.size())
+	, v(nn > 0 ? new double[nn] : NULL)
 {
-	nn = a.size();
-	resize(nn);
 	int i;
 	for(i = 0; i < nn; i++)
 		v[i] = a[i];
@@ -93,33 +91,6 @@ linalg::Vector& linalg::Vector::operator+=(const linalg::Vector& rhs)
 			v[i] += rhs[i];
 	}
 	return *this;
-}
-
-inline double& linalg::Vector::operator[](const int i) //subscripting
-{
-#ifdef _CHECKBOUNDS_
-	if(i < 0 || i >= nn)
-	{
-		throw("Vector subscript out of bounds");
-	}
-#endif
-	return v[i];
-}
-
-inline const double& linalg::Vector::operator[](const int i) const //subscripting
-{
-#ifdef _CHECKBOUNDS_
-	if(i < 0 || i >= nn)
-	{
-		throw("Vector subscript out of bounds");
-	}
-#endif
-	return v[i];
-}
-
-inline int linalg::Vector::size() const
-{
-	return nn;
 }
 
 void linalg::Vector::resize(int newn)

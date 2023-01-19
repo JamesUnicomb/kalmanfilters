@@ -67,13 +67,6 @@ void linalg::cholesky::dcmp()
 
 void linalg::cholesky::dcmp(Matrix& a)
 {
-	int i, j;
-	for(i = 0; i < n; i++)
-	{
-		for(j = 0; j < n; j++)
-		{
-			el[i][j] = a[i][j];
-		}
-	}
+	el = a;
 	dcmp();
 }

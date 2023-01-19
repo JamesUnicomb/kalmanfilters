@@ -63,11 +63,12 @@ void linalg::mult(double a, Matrix& b, Matrix& c)
 void linalg::mult(Matrix& a, Vector& b, Vector& c)
 {
 	int i, j;
+	setzero(c);
 	for(i = 0; i < a.nrows(); i++)
 	{
 		for(j = 0; j < a.ncols(); j++)
 		{
-			c[i] = a[i][j] * b[j];
+			c[i] += a[i][j] * b[j];
 		}
 	}
 }
@@ -75,6 +76,7 @@ void linalg::mult(Matrix& a, Vector& b, Vector& c)
 void linalg::mult(Matrix& a, Matrix& b, Matrix& c)
 {
 	int i, j, k;
+	setzero(c);
 	for(i = 0; i < a.nrows(); i++)
 	{
 		for(j = 0; j < b.ncols(); j++)
@@ -133,7 +135,6 @@ void linalg::weightedsum(Vector& w, Matrix& a, Vector& b)
 {
 	int i, j;
 	setzero(b);
-
 	for(i = 0; i < a.nrows(); i++)
 	{
 		for(j = 0; j < b.size(); j++)
@@ -147,7 +148,6 @@ void linalg::weightedmult(Vector& w, Matrix& a, Vector& abar, Matrix& b, Vector&
 {
 	int i, j, k;
 	setzero(c);
-
 	for(i = 0; i < a.nrows(); i++)
 	{
 		for(j = 0; j < abar.size(); j++)

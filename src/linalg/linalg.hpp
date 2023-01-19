@@ -23,9 +23,18 @@ public:
 	Vector& operator=(const Vector& rhs); //assignment
 	Vector& operator=(const std::vector<double>& rhs); //assignment from std::vector
 	Vector& operator+=(const Vector& rhs); //accumulate
-	inline double& operator[](const int i); //i'th element
-	inline const double& operator[](const int i) const;
-	inline int size() const;
+	inline double& operator[](const int i)
+	{
+		return v[i];
+	}
+	inline const double& operator[](const int i) const
+	{
+		return v[i];
+	}
+	inline int size() const
+	{
+		return nn;
+	};
 	void resize(int newn); // resize (contents not preserved)
 	void assign(int newn, const double& a); // resize and assign a constant value
 	std::vector<double> tovec(); // to std::vector
@@ -49,10 +58,22 @@ public:
 	Matrix& operator=(const Matrix& rhs); //assignment
 	Matrix& operator=(const std::vector<std::vector<double>>& rhs); //assignment from 2d std::vector
 	Matrix& operator+=(const Matrix& rhs); //accumulate
-	inline double* operator[](const int i); //subscripting: pointer to row i
-	inline const double* operator[](const int i) const;
-	inline int nrows() const;
-	inline int ncols() const;
+	inline double* operator[](const int i)
+	{
+		return v[i];
+	}
+	inline const double* operator[](const int i) const
+	{
+		return v[i];
+	}
+	inline int nrows() const
+	{
+		return nn;
+	}
+	inline int ncols() const
+	{
+		return mm;
+	}
 	void resize(int newn, int newm); // resize (contents not preserved)
 	void assign(int newn, int newm, const double& a); // resize and assign a constant value
 	std::vector<std::vector<double>> tovec(); // to 2d std::vector

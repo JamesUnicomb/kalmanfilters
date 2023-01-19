@@ -11,11 +11,15 @@ linalg::Matrix::Matrix()
 { }
 
 linalg::Matrix::Matrix(vector<vector<double>>& a)
+	: nn(a.size())
+	, mm(a[0].size())
+	, v(nn > 0 ? new double*[nn] : NULL)
 {
-	nn = a.size();
-	mm = a[0].size();
-	resize(nn, mm);
-	int i, j;
+	int i, j, nel = mm * nn;
+	if(v)
+		v[0] = nel > 0 ? new double[nel] : NULL;
+	for(i = 1; i < nn; i++)
+		v[i] = v[i - 1] + mm;
 	for(i = 0; i < nn; i++)
 		for(j = 0; j < mm; j++)
 			v[i][j] = a[i][j];
@@ -138,38 +142,6 @@ linalg::Matrix& linalg::Matrix::operator+=(const linalg::Matrix& rhs)
 				v[i][j] += rhs[i][j];
 	}
 	return *this;
-}
-
-inline double* linalg::Matrix::operator[](const int i) //subscripting: pointer to row i
-{
-#ifdef _CHECKBOUNDS_
-	if(i < 0 || i >= nn)
-	{
-		throw("Matrix subscript out of bounds");
-	}
-#endif
-	return v[i];
-}
-
-inline const double* linalg::Matrix::operator[](const int i) const
-{
-#ifdef _CHECKBOUNDS_
-	if(i < 0 || i >= nn)
-	{
-		throw("Matrix subscript out of bounds");
-	}
-#endif
-	return v[i];
-}
-
-inline int linalg::Matrix::nrows() const
-{
-	return nn;
-}
-
-inline int linalg::Matrix::ncols() const
-{
-	return mm;
 }
 
 void linalg::Matrix::resize(int newn, int newm)

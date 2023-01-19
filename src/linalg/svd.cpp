@@ -6,10 +6,10 @@
 using namespace std;
 
 linalg::SVD::SVD(Matrix& a)
-	: u(a)
+	: n(a.nrows())
+	, m(a.ncols())
+	, u(a)
 {
-	n = a.nrows();
-	m = a.ncols();
 	v = Matrix(n, n, 0.0);
 	w = Vector(n, 0.0);
 	eps = numeric_limits<double>::epsilon();
@@ -267,14 +267,7 @@ void linalg::SVD::dcmp()
 
 void linalg::SVD::dcmp(Matrix& a)
 {
-	int i, j;
-	for(i = 0; i < n; i++)
-	{
-		for(j = 0; j < m; j++)
-		{
-			u[i][j] = a[i][j];
-		}
-	}
+	u = a;
 	dcmp();
 	reorder();
 	tsh = 0.5 * sqrt(m + n + 1.) * w[0] * eps;
