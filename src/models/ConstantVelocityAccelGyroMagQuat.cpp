@@ -16,10 +16,10 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::predict(double delta, linalg::
 	omz = state[6];
 
 	// x = f(x) ~ [1, dt] * x
-	state[0] += delta * 0.5 * (-omx * qx - omy * qy - omz * qz);
-	state[1] += delta * 0.5 * (omx * qw + omz * qy - omy * qz);
-	state[2] += delta * 0.5 * (omy * qw - omz * qx + omx * qz);
-	state[3] += delta * 0.5 * (omz * qw + omy * qx - omx * qy);
+	state[0] = qw + delta * 0.5 * (-omx * qx - omy * qy - omz * qz);
+	state[1] = qx + delta * 0.5 * (omx * qw + omz * qy - omy * qz);
+	state[2] = qy + delta * 0.5 * (omy * qw - omz * qx + omx * qz);
+	state[3] = qz + delta * 0.5 * (omz * qw + omy * qx - omx * qy);
 }
 
 void ConstantVelocityAccelGyroMagQuatMotionModel::derivs(double delta, Vector& state, Matrix& jac)
@@ -351,7 +351,13 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel::getMeasurementUncertainty
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = accel.xunc;
+	measure_unc[0][1] = 0.0;
+	measure_unc[0][2] = 0.0;
+	measure_unc[1][0] = 0.0;
 	measure_unc[1][1] = accel.yunc;
+	measure_unc[1][2] = 0.0;
+	measure_unc[2][0] = 0.0;
+	measure_unc[2][1] = 0.0;
 	measure_unc[2][2] = accel.zunc;
 }
 
@@ -360,7 +366,13 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel::getMeasurementUncertainty
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = gyro.xunc;
+	measure_unc[0][1] = 0.0;
+	measure_unc[0][2] = 0.0;
+	measure_unc[1][0] = 0.0;
 	measure_unc[1][1] = gyro.yunc;
+	measure_unc[1][2] = 0.0;
+	measure_unc[2][0] = 0.0;
+	measure_unc[2][1] = 0.0;
 	measure_unc[2][2] = gyro.zunc;
 }
 
@@ -369,6 +381,12 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel::getMeasurementUncertainty
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = mag.xunc;
+	measure_unc[0][1] = 0.0;
+	measure_unc[0][2] = 0.0;
+	measure_unc[1][0] = 0.0;
 	measure_unc[1][1] = mag.yunc;
+	measure_unc[1][2] = 0.0;
+	measure_unc[2][0] = 0.0;
+	measure_unc[2][1] = 0.0;
 	measure_unc[2][2] = mag.zunc;
 }

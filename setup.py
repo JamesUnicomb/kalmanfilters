@@ -19,7 +19,7 @@ ext_modules = [
             # "src/models/ConstantVelocityAccel.cpp",
             # "src/models/ConstantVelocityAccelGyro.cpp",
             # "src/models/ConstantVelocityAccelGyroMag.cpp",
-            # "src/models/ConstantVelocityAccelGyroMagQuat.cpp",
+            "src/models/ConstantVelocityAccelGyroMagQuat.cpp",
             "main.cpp",
         ],
         include_dirs=["extern", "src"],

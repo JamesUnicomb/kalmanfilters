@@ -6,19 +6,20 @@
 #include "linalg/linalg.hpp"
 #include "quaternion/quaternion.hpp"
 #include "sensors/sensors.hpp"
-// #include "kalmanfilter/ExtendedKalmanFilter.hpp"
+#include "kalmanfilter/ExtendedKalmanFilter.hpp"
 // #include "kalmanfilter/UnscentedKalmanFilter.hpp"
 // #include "models/ConstantPositionAccel.hpp"
 // #include "models/ConstantPositionAccelMagQuat.hpp"
 // #include "models/ConstantVelocityAccelGyro.hpp"
 // #include "models/ConstantVelocityAccelGyroMag.hpp"
-// #include "models/ConstantVelocityAccelGyroMagQuat.hpp"
+#include "models/ConstantVelocityAccelGyroMagQuat.hpp"
 
 // clang-format off
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 using namespace std;
+using namespace linalg;
 namespace py = pybind11;
 
 PYBIND11_MODULE(kalmanfilters, mod) {
@@ -56,6 +57,14 @@ PYBIND11_MODULE(kalmanfilters, mod) {
     // py::module quaternion = mod.def_submodule("quaternion", "misc. quaternion utilities.");
     // quaternion.def("q_to_euler", py::overload_cast<std::vector<double>>(&quaternion::q_to_euler));
     // quaternion.def("q_to_mat4", py::overload_cast<std::vector<double>>(&quaternion::q_to_mat4));
+
+    py::module linalg = mod.def_submodule("linalg", "misc. linear algebra utilities.");
+    py::class_<Vector>(linalg, "Vector")
+        .def(py::init<vector<double>&>())
+        .def("tovec", &Vector::tovec);
+    py::class_<Matrix>(linalg, "Matrix")
+        .def(py::init<vector<vector<double>>&>())
+        .def("tovec", &Matrix::tovec);
 
     // typedef ExtendedKalmanFilter<ConstantPositionAccelMotionModel, ConstantPositionAccelMeasurementModel> cpekf;
     // py::class_<cpekf>(mod, "cpekf")
@@ -108,37 +117,20 @@ PYBIND11_MODULE(kalmanfilters, mod) {
     //     .def_readwrite("state_sigma_points", &cvukf::state_sigma_points)
     //     .def_readwrite("measurement_sigma_points", &cvukf::measurement_sigma_points);
 
-    // typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel> cvqekf;
-    // class pcvqekf : public cvqekf {
-    //     public:
-    //         pcvqekf(double q, vector<double> state, vector<vector<double>> state_unc) : cvqekf(q,state,state_unc) {}
-    //         void set_state(vector<double>& state_) { state = state_; }
-    //         void set_state_unc(vector<vector<double>>& state_unc_) { state_unc = state_unc_; }
-    //         vector<double> get_state() { return state.tovec(); }
-    //         vector<vector<double>> get_state_unc() { return state_unc.tovec(); }
-    // };
+    typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel> cvqekf;
 
-    // py::class_<pcvqekf>(mod, "cvqekf");
-        // .def(py::init<double, vector<double>, vector<vector<double>>>())
-        // .def("set_state", &pcvqekf::set_state)
-        // .def("set_state_unc", &pcvqekf::set_state_unc)
-        // .def("get_state", &pcvqekf::get_state)
-        // .def("get_state_unc", &pcvqekf::get_state_unc)
-        // .def("update", &pcvqekf::update<sensors::accel&>)
-        // .def("update", &pcvqekf::update<sensors::gyro&>)
-        // .def("update", &pcvqekf::update<sensors::mag&>);
-
-    // py::class_<pcvqekf>(mod, "cvqekf")
-    //     .def(py::init<double, vector<double>, vector<vector<double>>>())
-    //     .def("predict", &cvqekf::predict)
-    //     .def("update", &cvqekf::update<sensors::accel&>)
-    //     .def("update", &cvqekf::update<sensors::gyro&>)
-    //     .def("update", &cvqekf::update<sensors::mag&>)
-    //     .def_readwrite("state", &cvqekf::state)
-    //     .def_readwrite("state_unc", &cvqekf::state_unc)
-    //     .def_readwrite("innovation", &cvqekf::innovation)
-    //     .def_readwrite("innovation_unc", &cvqekf::innovation_unc)
-    //     .def_readwrite("dhdx", &cvqekf::dhdx);
+    py::class_<cvqekf>(mod, "cvqekf")
+        .def(py::init<double, Vector, Matrix>())
+        .def("set_state", &cvqekf::set_state)
+        .def("set_state_unc", &cvqekf::set_state_unc)
+        .def("get_state", &cvqekf::get_state)
+        .def("get_state_unc", &cvqekf::get_state_unc)
+        .def("get_innovation", &cvqekf::get_innovation)
+        .def("get_innovation_unc", &cvqekf::get_innovation_unc)
+        .def("predict", &cvqekf::predict)
+        .def("update", &cvqekf::update<sensors::accel&>)
+        .def("update", &cvqekf::update<sensors::gyro&>)
+        .def("update", &cvqekf::update<sensors::mag&>);
 
 
 #ifdef VERSION_INFO

@@ -50,17 +50,17 @@ struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 	void final(linalg::Vector& state, linalg::Matrix& state_unc)
 	{
 		// normalize quaternion
-		double qn = 0;
+		double qn = 0.0;
 		double qw, qx, qy, qz;
 		qw = state[0];
 		qx = state[1];
 		qy = state[2];
 		qz = state[3];
 		qn = sqrt(qw * qw + qx * qx + qy * qy + qz * qz);
-		state[0] *= 1.0 / qn;
-		state[1] *= 1.0 / qn;
-		state[2] *= 1.0 / qn;
-		state[3] *= 1.0 / qn;
+		state[0] = qw / qn;
+		state[1] = qx / qn;
+		state[2] = qy / qn;
+		state[3] = qz / qn;
 	}
 
 	const int statedim = 7;

@@ -1,20 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import kalmanfilters
+from kalmanfilters import cvqekf
+from kalmanfilters.linalg import Vector, Matrix
+from kalmanfilters.sensors import accel, gyro, mag
 
-state = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-state_unc = [
-    [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
-    [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
-]
+state = Vector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+state_unc = Matrix(
+    [
+        [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+    ]
+)
 
-kf = kalmanfilters.cvqekf(2.0, state, state_unc)
+kf = cvqekf(2.0, state, state_unc)
 
 microsprev = 0.0
 
@@ -33,6 +37,7 @@ mg = []
 mgp = []
 mgpunc = []
 
+
 with open("examples/data/data2.txt", "r") as f:
     for r in f.readlines()[1:]:
         sensor, data = r.rstrip().split(":")
@@ -47,26 +52,25 @@ with open("examples/data/data2.txt", "r") as f:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            accel = kalmanfilters.sensors.accel(x, y, z, 0.5, 0.5, 0.5)
+            Z = accel(x, y, z, 0.5, 0.5, 0.5)
 
             # run kf step
             kf.predict(dt)
-            kf.update(accel)
+            kf.update(Z)
+
+            Y = kf.get_innovation().tovec()
 
             tacc.append(micros)
             acc.append([x, y, z])
-            # accp.append(
-            #     [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            # )
-            # jac = kf.dhdx
-            # s = kf.innovation_unc
-            # accpunc.append(s)
+            accp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
+            accpunc.append(s)
 
         elif sensor == "gyro":
             # dt = (micros - microsprev) * 1e-6
             # microsprev = micros
 
-            gyro = kalmanfilters.sensors.gyro(x, y, z, 0.25, 0.25, 0.25)
+            Z = gyro(x, y, z, 0.5, 0.5, 0.5)
 
             # run kf step
             # kf.predict(dt)
@@ -74,33 +78,32 @@ with open("examples/data/data2.txt", "r") as f:
 
             tdv.append(micros)
             dv.append([x, y, z])
-            dvp.append([kf.state[4], kf.state[5], kf.state[6]])
+            dvp.append(kf.get_state().tovec()[4:])
             # jac = kf.dhdx
             # s = kf.innovation_unc
-            # dvpunc.append(np.eye(3).tolist())
+            s = np.add(np.array(kf.get_state_unc().tovec())[4:, 4:], 0.5 * np.eye(3))
+            dvpunc.append(s)
 
         elif sensor == "mag":
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            mag = kalmanfilters.sensors.mag(x, y, z, 400.0, 400.0, 400.0)
+            Z = mag(x, y, z, 40.0, 40.0, 40.0)
 
             # run kf step
             kf.predict(dt)
-            kf.update(mag)
+            kf.update(Z)
 
-            # jac = kf.dhdx
-            # s = kf.innovation_unc
+            Y = kf.get_innovation().tovec()
 
             tmg.append(micros)
             mg.append([x, y, z])
-            # mgp.append(
-            #     [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            # )
-            # mgpunc.append(s)
+            mgp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
+            mgpunc.append(s)
 
-        # print("state:     \n", kf.state)
-        # print('state_unc: \n', kf.state_unc)
+        # print("state:     \n", kf.get_state().tovec())
+        # print("state_unc: \n", kf.get_state_unc().tovec())
 
 acc = np.array(acc)
 accp = np.array(accp)

@@ -23,13 +23,29 @@ public:
     sigma = (I - K * dh/dx) * sigma
     */
 
-	// model and measurement dimension
-	int statedim;
-	int measuredim;
-
 	// x and sigma
 	linalg::Vector state;
 	linalg::Matrix state_unc;
+
+	// df/dx, df/dx^T, dh/dx, dh/dx^T
+	linalg::Matrix dfdx, dfdxT, dhdx, dhdxT;
+
+	// Q and R
+	linalg::Matrix process_unc, measure_unc;
+
+	// y and S
+	linalg::Vector innovation;
+	linalg::Matrix innovation_unc;
+
+	// K
+	linalg::Matrix gain;
+
+	// temp vectors/matrices for calculations
+	linalg::Matrix innovation_unc_inv;
+	linalg::Vector dx;
+	linalg::Matrix eye;
+	linalg::Matrix tmpunc;
+	linalg::Matrix tmpnn, tmpnm, tmpmn, tmpmm;
 
 	ExtendedKalmanFilter(double q, linalg::Vector state, linalg::Matrix state_unc)
 		: state(state)
@@ -69,7 +85,10 @@ public:
 			eye[i][i] = 1.0;
 		}
 
-		tmp = linalg::Matrix(MAX(measuredim, statedim), MAX(measuredim, statedim), 0.0);
+		tmpnn = linalg::Matrix(statedim, statedim, 0.0);
+		tmpnm = linalg::Matrix(statedim, measuredim, 0.0);
+		tmpmn = linalg::Matrix(measuredim, statedim, 0.0);
+		tmpmm = linalg::Matrix(measuredim, measuredim, 0.0);
 		tmpunc = linalg::Matrix(statedim, statedim, 0.0);
 	}
 
@@ -93,14 +112,24 @@ public:
 		return state_unc;
 	}
 
+	linalg::Vector get_innovation()
+	{
+		return innovation;
+	}
+
+	linalg::Matrix get_innovation_unc()
+	{
+		return innovation_unc;
+	}
+
 	void predict(double delta)
 	{
 		f(delta, state, dfdx, process_unc);
 
 		linalg::transpose(dfdx, dfdxT);
 
-		linalg::mult(dfdx, state_unc, tmp);
-		linalg::mult(tmp, dfdxT, state_unc);
+		linalg::mult(dfdx, state_unc, tmpunc);
+		linalg::mult(tmpunc, dfdxT, state_unc);
 
 		linalg::add(state_unc, process_unc, state_unc);
 	}
@@ -111,25 +140,25 @@ public:
 		h(state, z, innovation, dhdx, measure_unc);
 
 		linalg::transpose(dhdx, dhdxT);
-		linalg::mult(dhdx, state_unc, tmp);
-		linalg::mult(tmp, dhdxT, innovation_unc);
-		linalg::add(innovation_unc, measure_unc, innovation_unc);
+		linalg::mult(dhdx, state_unc, tmpmn);
+		linalg::mult(tmpmn, dhdxT, innovation_unc);
+		innovation_unc += measure_unc;
 
 		// calculate kalman gain
 		svd.dcmp(innovation_unc);
 		svd.inverse(innovation_unc_inv);
-		linalg::mult(dhdxT, innovation_unc_inv, tmp);
-		linalg::mult(state_unc, tmp, gain);
+		linalg::mult(dhdxT, innovation_unc_inv, tmpnm);
+		linalg::mult(state_unc, tmpnm, gain);
 
 		// update state
 		linalg::mult(gain, innovation, dx);
-		linalg::add(state, dx, state);
+		state += dx;
 
 		// update covariance
-		linalg::mult(gain, dhdx, tmp);
-		linalg::subtract(eye, tmp, tmp);
+		linalg::mult(gain, dhdx, tmpnn);
+		linalg::subtract(eye, tmpnn, tmpnn);
 		tmpunc = state_unc;
-		linalg::mult(tmp, tmpunc, state_unc);
+		linalg::mult(tmpnn, tmpunc, state_unc);
 
 		// update normalization routine
 		h.final(state, state_unc);
@@ -139,23 +168,9 @@ private:
 	F f;
 	H h;
 
-	// df/dx, df/dx^T, dh/dx, dh/dx^T
-	linalg::Matrix dfdx, dfdxT, dhdx, dhdxT;
-
-	// Q and R
-	linalg::Matrix process_unc, measure_unc;
-
-	// y and S
-	linalg::Vector innovation;
-	linalg::Matrix innovation_unc;
-
-	// K
-	linalg::Matrix gain;
-
-	// temp vectors/matrices for calculations
-	linalg::Matrix innovation_unc_inv;
-	linalg::Vector dx;
-	linalg::Matrix eye, tmp, tmpunc;
+	// model and measurement dimension
+	const int statedim;
+	const int measuredim;
 
 	// matrix inversion
 	linalg::SVD svd;
