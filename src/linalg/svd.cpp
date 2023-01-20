@@ -5,13 +5,13 @@
 
 using namespace std;
 
-linalg::SVD::SVD(vector<vector<double>>& a)
-	: u(a)
+linalg::SVD::SVD(Matrix& a)
+	: n(a.nrows())
+	, m(a.ncols())
+	, u(a)
 {
-	n = a.size();
-	m = a[0].size();
-	v = vector<vector<double>>(n, vector<double>(n, 0.0));
-	w = vector<double>(n, 0.0);
+	v = Matrix(n, n, 0.0);
+	w = Vector(n, 0.0);
 	eps = numeric_limits<double>::epsilon();
 	dcmp();
 	reorder();
@@ -22,9 +22,9 @@ linalg::SVD::SVD(int n, int m)
 	: n(n)
 	, m(m)
 {
-	u = vector<vector<double>>(n, vector<double>(m, 0.0));
-	v = vector<vector<double>>(n, vector<double>(n, 0.0));
-	w = vector<double>(n, 0.0);
+	u = Matrix(n, m, 0.0);
+	v = Matrix(n, n, 0.0);
+	w = Vector(n, 0.0);
 	eps = numeric_limits<double>::epsilon();
 	dcmp();
 	reorder();
@@ -41,7 +41,7 @@ void linalg::SVD::dcmp()
 	bool flag;
 	int i, its, j, jj, k, l, nm;
 	double anorm, c, f, g, h, s, scale, x, y, z;
-	vector<double> rv1(n);
+	Vector rv1(n);
 	g = scale = anorm = 0.0;
 	for(i = 0; i < n; i++)
 	{
@@ -265,25 +265,18 @@ void linalg::SVD::dcmp()
 	}
 }
 
-void linalg::SVD::dcmp(vector<vector<double>>& a)
+void linalg::SVD::dcmp(Matrix& a)
 {
-	int i, j;
-	for(i = 0; i < n; i++)
-	{
-		for(j = 0; j < m; j++)
-		{
-			u[i][j] = a[i][j];
-		}
-	}
+	u = a;
 	dcmp();
 	reorder();
 	tsh = 0.5 * sqrt(m + n + 1.) * w[0] * eps;
 }
 
-void linalg::SVD::inverse(vector<vector<double>>& ainv)
+void linalg::SVD::inverse(Matrix& ainv)
 {
 	int i, j, k;
-	setzero(ainv, n, n);
+	setzero(ainv);
 	for(i = 0; i < n; i++)
 	{
 		for(j = 0; j < n; j++)
@@ -362,10 +355,10 @@ double linalg::SVD::pythag(const double a, const double b)
 					: (absb == 0.0 ? 0.0 : absb * sqrt(1.0 + SQR(absa / absb))));
 }
 
-void linalg::SVD::sqrtm(vector<vector<double>>& asqrtm)
+void linalg::SVD::sqrtm(Matrix& asqrtm)
 {
 	int i, j, k;
-	setzero(asqrtm, n, n);
+	setzero(asqrtm);
 	for(i = 0; i < n; i++)
 	{
 		for(j = 0; j < n; j++)

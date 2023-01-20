@@ -32,35 +32,7 @@ public:
     sigma = sigma - K * S * K^T
     */
 
-	// x and sigma
-	std::vector<double> state;
-	std::vector<std::vector<double>> state_unc;
-	std::vector<std::vector<double>> state_unc_sqrtm;
-	std::vector<std::vector<double>> state_sigma_points;
-
-	// z and Z
-	std::vector<double> measurement;
-	std::vector<std::vector<double>> measurement_sigma_points;
-
-	// P
-	std::vector<std::vector<double>> state_measurement_cov;
-
-	// Q and R
-	std::vector<std::vector<double>> process_unc, measure_unc;
-
-	// y and S
-	std::vector<double> innovation;
-	std::vector<std::vector<double>> innovation_unc;
-
-	// K
-	std::vector<std::vector<double>> gain;
-	std::vector<std::vector<double>> gainT;
-
-	// ukf weights
-	std::vector<double> wm;
-	std::vector<double> wc;
-
-	UnscentedKalmanFilter(double q, std::vector<double> state, std::vector<std::vector<double>> state_unc)
+	UnscentedKalmanFilter(double q, linalg::Vector state, linalg::Matrix state_unc)
 		: state(state)
 		, state_unc(state_unc)
 		, statedim(h.statedim)
@@ -79,8 +51,8 @@ public:
 		kp = 0.01;
 		ld = ap * ap * (statedim + kp) - statedim;
 
-		wm = std::vector<double>(sigmadim, 1.0 / (2.0 * (statedim + ld)));
-		wc = std::vector<double>(sigmadim, 1.0 / (2.0 * (statedim + ld)));
+		wm = linalg::Vector(sigmadim, 1.0 / (2.0 * (statedim + ld)));
+		wc = linalg::Vector(sigmadim, 1.0 / (2.0 * (statedim + ld)));
 		wm[0] = ld / (statedim + ld);
 		wc[0] = ld / (statedim + ld) + (1 - ap * ap + bt);
 
@@ -88,48 +60,75 @@ public:
 		// noise for the motion model
 		f.q = q;
 
-		state_unc_sqrtm = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
-		for(i = 0; i < statedim; i++)
-		{
-			state_unc[i][i] = 10.0;
-		}
-		state_sigma_points = std::vector<std::vector<double>>(sigmadim, std::vector<double>(statedim, 0.0));
+		state_unc_sqrtm = linalg::Matrix(statedim, statedim, 0.0);
+		state_sigma_points = std::vector<linalg::Vector>(sigmadim, linalg::Vector(statedim, 0.0));
 
 		// expected measurement vector and measurement sigma points
-		measurement = std::vector<double>(measuredim, 0.0);
-		measurement_sigma_points =
-			std::vector<std::vector<double>>(sigmadim, std::vector<double>(measuredim, 0.0));
+		measurement = linalg::Vector(measuredim, 0.0);
+		measurement_sigma_points = std::vector<linalg::Vector>(sigmadim, linalg::Vector(measuredim, 0.0));
 
 		// process and measurement uncertainty matrices
-		process_unc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
-		measure_unc = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
+		process_unc = linalg::Matrix(statedim, statedim, 0.0);
+		measure_unc = linalg::Matrix(measuredim, measuredim, 0.0);
 
 		// innovation is Nx1
-		innovation = std::vector<double>(measuredim, 0.0);
-		innovation_unc = std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
-		innovation_unc_inv =
-			std::vector<std::vector<double>>(measuredim, std::vector<double>(measuredim, 0.0));
+		innovation = linalg::Vector(measuredim, 0.0);
+		innovation_unc = linalg::Matrix(measuredim, measuredim, 0.0);
+		innovation_unc_inv = linalg::Matrix(measuredim, measuredim, 0.0);
 
 		// measurement and state covariance
-		state_measurement_cov =
-			std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
+		state_measurement_cov = linalg::Matrix(statedim, measuredim, 0.0);
 
 		// kalman gain is NxM
-		gain = std::vector<std::vector<double>>(statedim, std::vector<double>(measuredim, 0.0));
-		gainT = std::vector<std::vector<double>>(measuredim, std::vector<double>(statedim, 0.0));
+		gain = linalg::Matrix(statedim, measuredim, 0.0);
+		gainT = linalg::Matrix(measuredim, statedim, 0.0);
 
 		// update variables
-		dx = std::vector<double>(statedim, 0.0);
+		dx = linalg::Vector(statedim, 0.0);
 
-		tmp = std::vector<std::vector<double>>(
-			MAX(measuredim, statedim), std::vector<double>(MAX(measuredim, statedim), 0.0));
-		tmpunc = std::vector<std::vector<double>>(statedim, std::vector<double>(statedim, 0.0));
+		// temporary matrices
+		tmpstate = linalg::Vector(statedim, 0.0);
+		tmpnn = linalg::Matrix(statedim, statedim, 0.0);
+		tmpnm = linalg::Matrix(statedim, measuredim, 0.0);
+		tmpmn = linalg::Matrix(measuredim, statedim, 0.0);
+		tmpmm = linalg::Matrix(measuredim, measuredim, 0.0);
+		tmpunc = linalg::Matrix(statedim, statedim, 0.0);
+	}
+
+	void set_state(linalg::Vector& state_)
+	{
+		state = state_;
+	}
+
+	void set_state_unc(linalg::Matrix& state_unc_)
+	{
+		state_unc = state_unc_;
+	}
+
+	linalg::Vector get_state()
+	{
+		return state;
+	}
+
+	linalg::Matrix get_state_unc()
+	{
+		return state_unc;
+	}
+
+	linalg::Vector get_innovation()
+	{
+		return innovation;
+	}
+
+	linalg::Matrix get_innovation_unc()
+	{
+		return innovation_unc;
 	}
 
 	void predict(double delta)
 	{
 		int i;
-		f.getProcessUncertainty(delta, process_unc);
+		f.getProcessUncertainty(delta, state, process_unc);
 
 		// calculate sigma points
 		svdstate.dcmp(state_unc);
@@ -138,9 +137,10 @@ public:
 		state_sigma_points[0] = state;
 		for(i = 0; i < statedim; i++)
 		{
-			linalg::vecmult(sqrt(statedim + ld), state_unc_sqrtm[i], state_unc_sqrtm[i], statedim);
-			linalg::vecadd(state, state_unc_sqrtm[i], state_sigma_points[i + 1], statedim);
-			linalg::vecsubtract(state, state_unc_sqrtm[i], state_sigma_points[i + statedim + 1], statedim);
+			tmpstate = linalg::Vector(statedim, state_unc_sqrtm[i]);
+			linalg::mult(sqrt(statedim + ld), tmpstate, tmpstate);
+			linalg::add(state, tmpstate, state_sigma_points[i + 1]);
+			linalg::subtract(state, tmpstate, state_sigma_points[i + statedim + 1]);
 		}
 
 		// make prediction for each sigma point
@@ -149,18 +149,11 @@ public:
 			f.predict(delta, state_sigma_points[i]);
 		}
 
-		linalg::weightedsum(wm, state_sigma_points, state, sigmadim, statedim);
-		linalg::weightedmult(
-			wc,
-			state_sigma_points,
-			state,
-			state_sigma_points,
-			state,
-			state_unc,
-			sigmadim,
-			statedim,
-			statedim);
-		linalg::matadd(state_unc, process_unc, state_unc, statedim, statedim);
+		linalg::weightedsum(wm, state_sigma_points, state);
+		linalg::weightedmult(wc, state_sigma_points, state, state_sigma_points, state, state_unc);
+		linalg::add(state_unc, process_unc, state_unc);
+
+		f.final(state, state_unc);
 	}
 
 	template <typename Z>
@@ -171,48 +164,33 @@ public:
 		{
 			h.predict(state_sigma_points[i], z, measurement_sigma_points[i]);
 		}
-		linalg::weightedsum(wm, measurement_sigma_points, measurement, sigmadim, measuredim);
+		linalg::weightedsum(wm, measurement_sigma_points, measurement);
 		linalg::weightedmult(
-			wc,
-			measurement_sigma_points,
-			measurement,
-			measurement_sigma_points,
-			measurement,
-			innovation_unc,
-			sigmadim,
-			measuredim,
-			measuredim);
-		linalg::matadd(innovation_unc, measure_unc, innovation_unc, measuredim, measuredim);
+			wc, measurement_sigma_points, measurement, measurement_sigma_points, measurement, innovation_unc);
+		linalg::add(innovation_unc, measure_unc, innovation_unc);
 
 		svdinnovation.dcmp(innovation_unc);
 		svdinnovation.inverse(innovation_unc_inv);
 
 		linalg::weightedmult(
-			wc,
-			state_sigma_points,
-			state,
-			measurement_sigma_points,
-			measurement,
-			state_measurement_cov,
-			sigmadim,
-			statedim,
-			measuredim);
+			wc, state_sigma_points, state, measurement_sigma_points, measurement, state_measurement_cov);
 
-		linalg::matmult(state_measurement_cov, innovation_unc_inv, gain, statedim, measuredim, measuredim);
+		linalg::mult(state_measurement_cov, innovation_unc_inv, gain);
 
 		// update state
 		// TODO: make this generic
 		innovation[0] = z.x - measurement[0];
 		innovation[1] = z.y - measurement[1];
 		innovation[2] = z.z - measurement[2];
-		linalg::matvecmult(gain, innovation, dx, statedim, measuredim);
-		linalg::vecadd(state, dx, state, statedim);
+
+		linalg::mult(gain, innovation, dx);
+		state += dx;
 
 		// update covariance
-		linalg::transpose(gain, gainT, statedim, measuredim);
-		linalg::matmult(innovation_unc, gainT, tmp, measuredim, measuredim, statedim);
-		linalg::matmult(gain, tmp, tmpunc, statedim, measuredim, statedim);
-		linalg::matsubtract(state_unc, tmpunc, state_unc, statedim, statedim);
+		linalg::transpose(gain, gainT);
+		linalg::mult(innovation_unc, gainT, tmpmn);
+		linalg::mult(gain, tmpmn, tmpunc);
+		linalg::subtract(state_unc, tmpunc, state_unc);
 
 		// update normalization routine
 		h.final(state, state_unc);
@@ -232,10 +210,40 @@ private:
 	double kp;
 	double ld;
 
+	// x and sigma
+	linalg::Vector state;
+	linalg::Matrix state_unc;
+	linalg::Matrix state_unc_sqrtm;
+	std::vector<linalg::Vector> state_sigma_points;
+
+	// z and Z
+	linalg::Vector measurement;
+	std::vector<linalg::Vector> measurement_sigma_points;
+
+	// P
+	linalg::Matrix state_measurement_cov;
+
+	// Q and R
+	linalg::Matrix process_unc, measure_unc;
+
+	// y and S
+	linalg::Vector innovation;
+	linalg::Matrix innovation_unc;
+
+	// K
+	linalg::Matrix gain;
+	linalg::Matrix gainT;
+
+	// ukf weights
+	linalg::Vector wm;
+	linalg::Vector wc;
+
 	// temp vectors/matrices for calculations
-	std::vector<std::vector<double>> innovation_unc_inv;
-	std::vector<double> dx;
-	std::vector<std::vector<double>> eye, tmp, tmpunc;
+	linalg::Matrix innovation_unc_inv;
+	linalg::Vector dx;
+	linalg::Matrix eye, tmpunc;
+	linalg::Vector tmpstate;
+	linalg::Matrix tmpnn, tmpnm, tmpmn, tmpmm;
 
 	// matrix inversion and sigma points
 	linalg::SVD svdinnovation;

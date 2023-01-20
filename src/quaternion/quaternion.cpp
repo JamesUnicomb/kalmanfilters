@@ -1,9 +1,11 @@
 #include "quaternion.hpp"
+#include "linalg/linalg.hpp"
 #include <vector>
 
 using namespace std;
+using namespace linalg;
 
-void quaternion::q_to_euler(vector<double>& q, vector<double>& euler)
+void quaternion::q_to_euler(Vector& q, Vector& euler)
 {
 	double qw, qx, qy, qz;
 	qw = q[0];
@@ -16,14 +18,7 @@ void quaternion::q_to_euler(vector<double>& q, vector<double>& euler)
 	euler[2] = atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz);
 }
 
-vector<double> quaternion::q_to_euler(vector<double> q)
-{
-	vector<double> euler(3, 0.0);
-	q_to_euler(q, euler);
-	return euler;
-}
-
-void quaternion::q_to_mat4(vector<double>& q, vector<vector<double>>& mat)
+void quaternion::q_to_mat4(Vector& q, Matrix& mat)
 {
 	double qw, qx, qy, qz;
 	qw = q[0];
@@ -50,11 +45,4 @@ void quaternion::q_to_mat4(vector<double>& q, vector<vector<double>>& mat)
 	mat[3][1] = 0.0;
 	mat[3][2] = 0.0;
 	mat[3][3] = 1.0;
-}
-
-vector<vector<double>> quaternion::q_to_mat4(vector<double> q)
-{
-	vector<vector<double>> mat(4, vector<double>(4, 0.0));
-	q_to_mat4(q, mat);
-	return mat;
 }

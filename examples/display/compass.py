@@ -9,7 +9,10 @@ from OpenGL.GLU import *
 
 import serial
 from serial.serialutil import SerialException
-import kalmanfilters
+
+from kalmanfilters import cvqekf
+from kalmanfilters.linalg import Vector, Matrix
+from kalmanfilters.sensors import accel, gyro, mag
 
 
 def get_rot_mat(phi, theta, psi):
@@ -31,6 +34,16 @@ def get_rot_mat(phi, theta, psi):
     ]
 
     return R
+
+
+def q_to_euler(q):
+    qw, qx, qy, qz = q
+
+    phi = np.arctan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz)
+    theta = np.arcsin(-2.0 * (qx * qz - qw * qy))
+    psi = np.arctan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)
+
+    return phi, theta, psi
 
 
 compass_verts = (
@@ -344,18 +357,20 @@ def main():
     ser = serial.Serial("/dev/tty.usbmodem205E3072594D1", 9600)
     ser.flushInput()
 
-    state = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    state_unc = [
-        [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
-    ]
+    state = Vector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    state_unc = Matrix(
+        [
+            [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+        ]
+    )
 
-    kf = kalmanfilters.cvqekf(2.0, state, state_unc)
+    kf = cvqekf(2.0, state, state_unc)
 
     microsprev = 0.0
 
@@ -396,31 +411,31 @@ def main():
                 dt = (micros - microsprev) * 1e-6
                 microsprev = micros
 
-                accel = kalmanfilters.sensors.accel(x, y, z, 0.25, 0.25, 0.25)
+                Z = accel(x, y, z, 0.25, 0.25, 0.25)
 
                 # run kf step
                 kf.predict(dt)
-                kf.update(accel)
+                kf.update(Z)
 
             elif sensor == "gyro":
                 dt = (micros - microsprev) * 1e-6
                 microsprev = micros
 
-                gyro = kalmanfilters.sensors.gyro(x, y, z, 0.25, 0.25, 0.25)
+                Z = gyro(x, y, z, 0.25, 0.25, 0.25)
 
                 # run kf step
                 kf.predict(dt)
-                kf.update(gyro)
+                kf.update(Z)
 
             elif sensor == "mag":
                 dt = (micros - microsprev) * 1e-6
                 microsprev = micros
 
-                mag = kalmanfilters.sensors.mag(x, y, z, 45.0, 45.0, 45.0)
+                Z = mag(x, y, z, 45.0, 45.0, 45.0)
 
                 # run kf step
                 kf.predict(dt)
-                kf.update(mag)
+                kf.update(Z)
 
         except (KeyboardInterrupt, SerialException) as e:
             print(e)
@@ -431,9 +446,9 @@ def main():
 
         glMatrixMode(GL_MODELVIEW)
 
-        qw, qx, qy, qz, _, _, _ = kf.state
+        qw, qx, qy, qz, _, _, _ = kf.get_state().tovec()
         print(qw, qx, qy, qz)
-        phi, theta, psi = kalmanfilters.quaternion.q_to_euler([qw, qx, qy, qz])
+        phi, theta, psi = q_to_euler([qw, qx, qy, qz])
 
         glLoadMatrixf(get_rot_mat(0.0, 0.0, -psi))
 

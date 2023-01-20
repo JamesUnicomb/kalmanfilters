@@ -1,19 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import kalmanfilters
+from kalmanfilters import cvekf
+from kalmanfilters.linalg import Vector, Matrix
+from kalmanfilters.sensors import accel, gyro, mag
 
-state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-state_unc = [
-    [10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    [0.0, 10.0, 0.0, 0.0, 0.0, 0.0],
-    [0.0, 0.0, 10.0, 0.0, 0.0, 0.0],
-    [0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
-]
+state = Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+state_unc = Matrix(
+    [
+        [10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 10.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 10.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+    ]
+)
 
-kf = kalmanfilters.cvekf(5.0, state, state_unc)
+kf = cvekf(5.0, state, state_unc)
 
 microsprev = 0.0
 
@@ -46,58 +50,51 @@ with open("examples/data/data1.txt", "r") as f:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            accel = kalmanfilters.sensors.accel(x, y, z, 0.025, 0.025, 0.025)
+            Z = accel(x, y, z, 0.025, 0.025, 0.025)
 
             # run kf step
             kf.predict(dt)
-            kf.update(accel)
+            kf.update(Z)
 
             tacc.append(micros)
             acc.append([x, y, z])
-            accp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
-            jac = kf.dhdx
-            s = kf.innovation_unc
+            Y = kf.get_innovation().tovec()
+            accp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
             accpunc.append(s)
 
         elif sensor == "gyro":
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            gyro = kalmanfilters.sensors.gyro(x, y, z, 0.25, 0.25, 0.25)
+            Z = gyro(x, y, z, 0.25, 0.25, 0.25)
 
             # run kf step
             kf.predict(dt)
-            kf.update(gyro)
+            kf.update(Z)
 
             tdv.append(micros)
             dv.append([x, y, z])
-            dvp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
-            jac = kf.dhdx
-            s = kf.innovation_unc
+            Y = kf.get_innovation().tovec()
+            dvp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
             dvpunc.append(s)
 
         elif sensor == "mag":
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            mag = kalmanfilters.sensors.mag(x, y, z, 45.0, 45.0, 45.0)
+            Z = mag(x, y, z, 45.0, 45.0, 45.0)
 
             # run kf step
             kf.predict(dt)
-            kf.update(mag)
-
-            jac = kf.dhdx
-            s = kf.innovation_unc
+            kf.update(Z)
 
             tmg.append(micros)
             mg.append([x, y, z])
-            mgp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
+            Y = kf.get_innovation().tovec()
+            mgp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
             mgpunc.append(s)
 
         # print('state:     \n', kf.state)

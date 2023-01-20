@@ -4,7 +4,7 @@
 using namespace std;
 using namespace linalg;
 
-void ConstantVelocityAccelGyroMagMotionModel::predict(double delta, vector<double>& state)
+void ConstantVelocityAccelGyroMagMotionModel::predict(double delta, Vector& state)
 {
 	// x = f(x) ~ [1, dt] * x
 	state[0] += delta * state[3];
@@ -12,12 +12,11 @@ void ConstantVelocityAccelGyroMagMotionModel::predict(double delta, vector<doubl
 	state[2] += delta * state[5];
 }
 
-void ConstantVelocityAccelGyroMagMotionModel::derivs(
-	double delta, vector<double>& state, vector<vector<double>>& jac)
+void ConstantVelocityAccelGyroMagMotionModel::derivs(double delta, Vector& state, Matrix& jac)
 {
 	int i;
 	// df / dx = [1, dt]
-	setzero(jac, statedim, statedim);
+	setzero(jac);
 	for(i = 0; i < statedim; i++)
 	{
 		jac[i][i] = 1.0;
@@ -27,14 +26,13 @@ void ConstantVelocityAccelGyroMagMotionModel::derivs(
 	jac[2][5] = delta;
 }
 
-void ConstantVelocityAccelGyroMagMotionModel::getProcessUncertainty(
-	double delta, vector<vector<double>>& process_unc)
+void ConstantVelocityAccelGyroMagMotionModel::getProcessUncertainty(double delta, Matrix& process_unc)
 {
 	int i;
 	// see https://www.robots.ox.ac.uk/~ian/Teaching/Estimation/LectureNotes2.pdf
 	// pages 12-13 for a derivation of the process noise
 	// the model assumes changes in velocity are i.i.d white noise
-	setzero(process_unc, statedim, statedim);
+	setzero(process_unc);
 	for(i = 0; i < 3; i++)
 	{
 		process_unc[i][i] = delta * delta * delta / 3.0 * q;
@@ -45,15 +43,14 @@ void ConstantVelocityAccelGyroMagMotionModel::getProcessUncertainty(
 }
 
 void ConstantVelocityAccelGyroMagMotionModel::operator()(
-	double delta, vector<double>& state, vector<vector<double>>& jac, vector<vector<double>>& process_unc)
+	double delta, Vector& state, Matrix& jac, Matrix& process_unc)
 {
 	derivs(delta, state, jac);
 	getProcessUncertainty(delta, process_unc);
 	predict(delta, state);
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::predict(
-	vector<double>& state, sensors::accel& accel, vector<double>& h)
+void ConstantVelocityAccelGyroMagMeasurementModel::predict(Vector& state, sensors::accel& accel, Vector& h)
 {
 	// run trig functions once
 	double s0, c0, s1, c1;
@@ -69,8 +66,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::predict(
 	h[2] = c0 * c1 * g;
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::predict(
-	vector<double>& state, sensors::gyro& gyro, vector<double>& h)
+void ConstantVelocityAccelGyroMagMeasurementModel::predict(Vector& state, sensors::gyro& gyro, Vector& h)
 {
 	// run trig functions once
 	double s0, c0, s1, c1;
@@ -86,8 +82,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::predict(
 	h[2] = -s0 * state[4] + c0 * c1 * state[5];
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::predict(
-	vector<double>& state, sensors::mag& mag, vector<double>& h)
+void ConstantVelocityAccelGyroMagMeasurementModel::predict(Vector& state, sensors::mag& mag, Vector& h)
 {
 	// run trig functions once
 	double s0, c0, s1, c1, s2, c2;
@@ -105,8 +100,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::predict(
 	h[2] = (c2 * s1 * c0 + s2 * s0) * mx + (s2 * s1 * c0 - c2 * s0) * my + c1 * c0 * mz;
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::innovation(
-	vector<double>& state, sensors::accel& accel, vector<double>& y)
+void ConstantVelocityAccelGyroMagMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
 {
 	// run trig functions once
 	double s0, c0, s1, c1;
@@ -122,8 +116,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::innovation(
 	y[2] = accel.z - (c0 * c1 * g);
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::innovation(
-	vector<double>& state, sensors::gyro& gyro, vector<double>& y)
+void ConstantVelocityAccelGyroMagMeasurementModel::innovation(Vector& state, sensors::gyro& gyro, Vector& y)
 {
 	// run trig functions once
 	double s0, c0, s1, c1;
@@ -139,8 +132,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::innovation(
 	y[2] = gyro.z - (-s0 * state[4] + c0 * c1 * state[5]);
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::innovation(
-	vector<double>& state, sensors::mag& mag, vector<double>& y)
+void ConstantVelocityAccelGyroMagMeasurementModel::innovation(Vector& state, sensors::mag& mag, Vector& y)
 {
 	// run trig functions once
 	double s0, c0, s1, c1, s2, c2;
@@ -159,11 +151,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::innovation(
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::operator()(
-	vector<double>& state,
-	sensors::accel& accel,
-	vector<double>& y,
-	vector<vector<double>>& jac,
-	vector<vector<double>>& measure_unc)
+	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac, Matrix& measure_unc)
 {
 	innovation(state, accel, y);
 	derivs(state, accel, jac);
@@ -171,11 +159,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::operator()(
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::operator()(
-	vector<double>& state,
-	sensors::gyro& gyro,
-	vector<double>& y,
-	vector<vector<double>>& jac,
-	vector<vector<double>>& measure_unc)
+	Vector& state, sensors::gyro& gyro, Vector& y, Matrix& jac, Matrix& measure_unc)
 {
 	innovation(state, gyro, y);
 	derivs(state, gyro, jac);
@@ -183,19 +167,14 @@ void ConstantVelocityAccelGyroMagMeasurementModel::operator()(
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::operator()(
-	vector<double>& state,
-	sensors::mag& mag,
-	vector<double>& y,
-	vector<vector<double>>& jac,
-	vector<vector<double>>& measure_unc)
+	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac, Matrix& measure_unc)
 {
 	innovation(state, mag, y);
 	derivs(state, mag, jac);
 	getMeasurementUncertainty(mag, measure_unc);
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::derivs(
-	vector<double>& state, sensors::accel& accel, vector<vector<double>>& jac)
+void ConstantVelocityAccelGyroMagMeasurementModel::derivs(Vector& state, sensors::accel& accel, Matrix& jac)
 {
 	// run trig functions once
 	double s0, c0, s1, c1;
@@ -227,8 +206,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::derivs(
 	jac[2][5] = 0.0;
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::derivs(
-	vector<double>& state, sensors::gyro& gyro, vector<vector<double>>& jac)
+void ConstantVelocityAccelGyroMagMeasurementModel::derivs(Vector& state, sensors::gyro& gyro, Matrix& jac)
 {
 	// run trig functions once
 	double s0, c0, s1, c1;
@@ -260,8 +238,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::derivs(
 	jac[2][5] = c0 * c1;
 }
 
-void ConstantVelocityAccelGyroMagMeasurementModel::derivs(
-	vector<double>& state, sensors::mag& mag, vector<vector<double>>& jac)
+void ConstantVelocityAccelGyroMagMeasurementModel::derivs(Vector& state, sensors::mag& mag, Matrix& jac)
 {
 	// run trig functions once
 	double s0, c0, s1, c1, s2, c2;
@@ -296,7 +273,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::derivs(
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::getMeasurementUncertainty(
-	sensors::accel& accel, vector<vector<double>>& measure_unc)
+	sensors::accel& accel, Matrix& measure_unc)
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = accel.xunc;
@@ -305,7 +282,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::getMeasurementUncertainty(
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::getMeasurementUncertainty(
-	sensors::gyro& gyro, vector<vector<double>>& measure_unc)
+	sensors::gyro& gyro, Matrix& measure_unc)
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = gyro.xunc;
@@ -314,7 +291,7 @@ void ConstantVelocityAccelGyroMagMeasurementModel::getMeasurementUncertainty(
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::getMeasurementUncertainty(
-	sensors::mag& mag, vector<vector<double>>& measure_unc)
+	sensors::mag& mag, Matrix& measure_unc)
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = mag.xunc;

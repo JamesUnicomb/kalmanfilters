@@ -7,83 +7,126 @@
 
 namespace linalg
 {
-void setzero(std::vector<double>& a, int n1);
-void setzero(std::vector<std::vector<double>>& a, int n1, int n2);
-void matcopy(std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b, int n1, int n2);
-void transpose(std::vector<std::vector<double>>& a, std::vector<std::vector<double>>& b, int n1, int n2);
-void matvecmultacc(
-	std::vector<std::vector<double>>& a, std::vector<double>& b, std::vector<double>& c, int n1, int n2);
-void matvecmult(
-	std::vector<std::vector<double>>& a, std::vector<double>& b, std::vector<double>& c, int n1, int n2);
-void matmultacc(
-	std::vector<std::vector<double>>& a,
-	std::vector<std::vector<double>>& b,
-	std::vector<std::vector<double>>& c,
-	int n1,
-	int n2,
-	int n3);
-void matmult(
-	std::vector<std::vector<double>>& a,
-	std::vector<std::vector<double>>& b,
-	std::vector<std::vector<double>>& c,
-	int n1,
-	int n2,
-	int n3);
-void vecadd(std::vector<double>& a, std::vector<double>& b, std::vector<double>& c, int n1);
-void vecsubtract(std::vector<double>& a, std::vector<double>& b, std::vector<double>& c, int n1);
-void vecmult(double c, std::vector<double>& a, std::vector<double>& b, int n1);
-void matadd(
-	std::vector<std::vector<double>>& a,
-	std::vector<std::vector<double>>& b,
-	std::vector<std::vector<double>>& c,
-	int n1,
-	int n2);
-void matsubtract(
-	std::vector<std::vector<double>>& a,
-	std::vector<std::vector<double>>& b,
-	std::vector<std::vector<double>>& c,
-	int n1,
-	int n2);
+class Vector
+{
+private:
+	int nn; // size of array. upper index is nn-1
+	double* v;
+
+public:
+	Vector();
+	Vector(std::vector<double>& a);
+	explicit Vector(int n); // Zero-based array
+	Vector(int n, const double& a); //initialize to constant value
+	Vector(int n, const double* a); // Initialize to array
+	Vector(const Vector& rhs); // Copy constructor
+	Vector& operator=(const Vector& rhs); //assignment
+	Vector& operator=(const std::vector<double>& rhs); //assignment from std::vector
+	Vector& operator+=(const Vector& rhs); //accumulate
+	inline double& operator[](const int i)
+	{
+		return v[i];
+	}
+	inline const double& operator[](const int i) const
+	{
+		return v[i];
+	}
+	inline int size() const
+	{
+		return nn;
+	};
+	void resize(int newn); // resize (contents not preserved)
+	void assign(int newn, const double& a); // resize and assign a constant value
+	std::vector<double> tovec(); // to std::vector
+	~Vector();
+};
+
+class Matrix
+{
+private:
+	int nn;
+	int mm;
+	double** v;
+
+public:
+	Matrix();
+	Matrix(std::vector<std::vector<double>>& a);
+	Matrix(int n, int m); // Zero-based array
+	Matrix(int n, int m, const double& a); //Initialize to constant
+	Matrix(int n, int m, const double* a); // Initialize to array
+	Matrix(const Matrix& rhs); // Copy constructor
+	Matrix& operator=(const Matrix& rhs); //assignment
+	Matrix& operator=(const std::vector<std::vector<double>>& rhs); //assignment from 2d std::vector
+	Matrix& operator+=(const Matrix& rhs); //accumulate
+	inline double* operator[](const int i)
+	{
+		return v[i];
+	}
+	inline const double* operator[](const int i) const
+	{
+		return v[i];
+	}
+	inline int nrows() const
+	{
+		return nn;
+	}
+	inline int ncols() const
+	{
+		return mm;
+	}
+	void resize(int newn, int newm); // resize (contents not preserved)
+	void assign(int newn, int newm, const double& a); // resize and assign a constant value
+	std::vector<std::vector<double>> tovec(); // to 2d std::vector
+	~Matrix();
+};
+
+void setzero(Vector& a);
+void setzero(Matrix& a);
+void transpose(Matrix& a, Matrix& b);
+void mult(double a, Vector& b, Vector& c);
+void mult(double a, Matrix& b, Matrix& c);
+void mult(Matrix& a, Vector& b, Vector& c);
+void mult(Matrix& a, Matrix& b, Matrix& c);
+void add(Vector& a, Vector& b, Vector& c);
+void add(Matrix& a, Matrix& b, Matrix& c);
+void subtract(Vector& a, Vector& b, Vector& c);
+void subtract(Matrix& a, Matrix& b, Matrix& c);
 // decompositions
 struct cholesky
 {
 	int n;
-	std::vector<std::vector<double>> el;
+	Matrix el;
 	cholesky(int n);
-	cholesky(std::vector<std::vector<double>>& a);
-	void inverse(std::vector<std::vector<double>>& ainv);
+	cholesky(Matrix& a);
+	void inverse(Matrix& ainv);
 	void dcmp();
-	void dcmp(std::vector<std::vector<double>>& a);
+	void dcmp(Matrix& a);
 };
 struct SVD
 {
 	int m, n;
-	std::vector<std::vector<double>> u, v;
-	std::vector<double> w;
+	Matrix u, v;
+	Vector w;
 	double eps, tsh;
-	SVD(std::vector<std::vector<double>>& a);
+	SVD(Matrix& a);
 	SVD(int n, int m);
 	double inv_condition();
 	void dcmp();
-	void dcmp(std::vector<std::vector<double>>& a);
+	void dcmp(Matrix& a);
 	void reorder();
 	double pythag(const double a, const double b);
-	void inverse(std::vector<std::vector<double>>& ainv);
-	void sqrtm(std::vector<std::vector<double>>& asqrtm);
+	void inverse(Matrix& ainv);
+	void sqrtm(Matrix& asqrtm);
 };
 // statistial linear algebra routines
-void weightedsum(
-	std::vector<double>& w, std::vector<std::vector<double>>& a, std::vector<double>& b, int n1, int n2);
+void weightedsum(Vector& w, std::vector<Vector>& a, Vector& b);
 void weightedmult(
-	std::vector<double>& w,
-	std::vector<std::vector<double>>& a,
-	std::vector<double>& abar,
-	std::vector<std::vector<double>>& b,
-	std::vector<double>& bbar,
-	std::vector<std::vector<double>>& c,
-	int n1,
-	int n2,
-	int n3);
+	Vector& w,
+	std::vector<Vector>& a,
+	Vector& abar,
+	std::vector<Vector>& b,
+	Vector& bbar,
+	Matrix& c);
 }; // namespace linalg
 
 #endif /* _LINALG_HPP_ */

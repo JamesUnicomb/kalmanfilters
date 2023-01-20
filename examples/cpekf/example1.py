@@ -1,15 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import kalmanfilters
+from kalmanfilters import cpekf
+from kalmanfilters.linalg import Vector, Matrix
+from kalmanfilters.sensors import accel, gyro, mag
 
-state = [0.0, 0.0]
-state_unc = [
-    [10.0, 0.0],
-    [0.0, 10.0],
-]
+state = Vector([0.0, 0.0])
+state_unc = Matrix(
+    [
+        [10.0, 0.0],
+        [0.0, 10.0],
+    ]
+)
 
-kf = kalmanfilters.cpekf(0.25, state, state_unc)
+kf = cpekf(0.25, state, state_unc)
 
 microsprev = 0.0
 
@@ -29,23 +33,21 @@ with open("examples/data/data1.txt", "r") as f:
         z = float(z)
 
         if sensor == "accl":
-            accel = kalmanfilters.sensors.accel(x, y, z, 0.025, 0.025, 0.025)
+            Z = accel(x, y, z, 0.025, 0.025, 0.025)
 
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
             # run kf step
             kf.predict(dt)
-            kf.update(accel)
+            kf.update(Z)
 
             t.append(micros)
             acc.append([x, y, z])
-            accp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
+            Y = kf.get_innovation().tovec()
+            accp.append([x - Y[0], y - Y[1], z - Y[2]])
 
-            jac = kf.dhdx
-            s = kf.innovation_unc
+            s = kf.get_innovation_unc().tovec()
 
             accpunc.append(s)
 

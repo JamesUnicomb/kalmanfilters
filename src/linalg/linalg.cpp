@@ -6,91 +6,82 @@
 
 using namespace std;
 
-void linalg::setzero(vector<double>& a, int n1)
+void linalg::setzero(Vector& a)
 {
 	int i;
-	for(i = 0; i < n1; i++)
+	for(i = 0; i < a.size(); i++)
 	{
 		a[i] = 0.0;
 	}
 }
 
-void linalg::setzero(vector<vector<double>>& a, int n1, int n2)
+void linalg::setzero(Matrix& a)
 {
 	int i, j;
-	for(i = 0; i < n1; i++)
+	for(i = 0; i < a.nrows(); i++)
 	{
-		for(j = 0; j < n2; j++)
+		for(j = 0; j < a.ncols(); j++)
 		{
 			a[i][j] = 0.0;
 		}
 	}
 }
 
-void linalg::matcopy(vector<vector<double>>& a, vector<vector<double>>& b, int n1, int n2)
+void linalg::transpose(Matrix& a, Matrix& b)
 {
-	// a is n1 x n2
-	// b is n1 x n2
 	int i, j;
-	for(i = 0; i < n1; i++)
+	for(i = 0; i < a.nrows(); i++)
 	{
-		for(j = 0; j < n2; j++)
-		{
-			b[i][j] = a[i][j];
-		}
-	}
-}
-
-void linalg::transpose(vector<vector<double>>& a, vector<vector<double>>& b, int n1, int n2)
-{
-	// a is n1 x n2
-	// b is n2 x n1
-	int i, j;
-	for(i = 0; i < n1; i++)
-	{
-		for(j = 0; j < n2; j++)
+		for(j = 0; j < a.ncols(); j++)
 		{
 			b[j][i] = a[i][j];
 		}
 	}
 }
 
-void linalg::matvecmultacc(vector<vector<double>>& a, vector<double>& b, vector<double>& c, int n1, int n2)
+void linalg::mult(double a, Vector& b, Vector& c)
 {
-	// a is n1 x n2
-	// b is n2
-	// c is n1
-	int i, j;
-	for(i = 0; i < n1; i++)
+	int i;
+	for(i = 0; i < b.size(); i++)
 	{
-		for(j = 0; j < n2; j++)
+		c[i] = a * b[i];
+	}
+}
+
+void linalg::mult(double a, Matrix& b, Matrix& c)
+{
+	int i, j;
+	for(i = 0; i < b.nrows(); i++)
+	{
+		for(j = 0; j < b.ncols(); i++)
+		{
+			c[i][j] = a * b[i][j];
+		}
+	}
+}
+
+void linalg::mult(Matrix& a, Vector& b, Vector& c)
+{
+	int i, j;
+	setzero(c);
+	for(i = 0; i < a.nrows(); i++)
+	{
+		for(j = 0; j < a.ncols(); j++)
 		{
 			c[i] += a[i][j] * b[j];
 		}
 	}
 }
 
-void linalg::matvecmult(vector<vector<double>>& a, vector<double>& b, vector<double>& c, int n1, int n2)
+void linalg::mult(Matrix& a, Matrix& b, Matrix& c)
 {
-	// a is n1 x n2
-	// b is n2
-	// c is n1
-	setzero(c, n1);
-	matvecmultacc(a, b, c, n1, n2);
-}
-
-void linalg::matmultacc(
-	vector<vector<double>>& a, vector<vector<double>>& b, vector<vector<double>>& c, int n1, int n2, int n3)
-{
-	// a is n1 x n2
-	// b is n2 x n3
-	// c is n1 x n3
 	int i, j, k;
-	for(i = 0; i < n1; i++)
+	setzero(c);
+	for(i = 0; i < a.nrows(); i++)
 	{
-		for(j = 0; j < n3; j++)
+		for(j = 0; j < b.ncols(); j++)
 		{
-			for(k = 0; k < n2; k++)
+			for(k = 0; k < a.ncols(); k++)
 			{
 				c[i][j] += a[i][k] * b[k][j];
 			}
@@ -98,94 +89,55 @@ void linalg::matmultacc(
 	}
 }
 
-void linalg::matmult(
-	vector<vector<double>>& a, vector<vector<double>>& b, vector<vector<double>>& c, int n1, int n2, int n3)
+void linalg::add(Vector& a, Vector& b, Vector& c)
 {
-	// a is n1 x n2
-	// b is n2 x n3
-	// c is n1 x n3
-	setzero(c, n1, n3);
-	matmultacc(a, b, c, n1, n2, n3);
-}
-
-void linalg::vecadd(vector<double>& a, vector<double>& b, vector<double>& c, int n1)
-{
-	// a is n1 x 1
-	// b is n1 x 1
-	// c is n1 x 1
 	int i;
-	for(i = 0; i < n1; i++)
+	for(i = 0; i < a.size(); i++)
 	{
 		c[i] = a[i] + b[i];
 	}
 }
 
-void linalg::vecsubtract(vector<double>& a, vector<double>& b, vector<double>& c, int n1)
+void linalg::add(Matrix& a, Matrix& b, Matrix& c)
 {
-	// a is n1 x 1
-	// b is n1 x 1
-	// c is n1 x 1
-	int i;
-	for(i = 0; i < n1; i++)
-	{
-		c[i] = a[i] - b[i];
-	}
-}
-
-void linalg::vecmult(double c, vector<double>& a, vector<double>& b, int n1)
-{
-	// a is n1 x 1
-	// b is n1 x 1
-	int i;
-	for(i = 0; i < n1; i++)
-	{
-		b[i] = c * a[i];
-	}
-}
-
-void linalg::matadd(
-	vector<vector<double>>& a, vector<vector<double>>& b, vector<vector<double>>& c, int n1, int n2)
-{
-	// a is n1 x n2
-	// b is n1 x n2
-	// c is n1 x n2
 	int i, j;
-	for(i = 0; i < n1; i++)
+	for(i = 0; i < a.nrows(); i++)
 	{
-		for(j = 0; j < n2; j++)
+		for(j = 0; j < a.ncols(); j++)
 		{
 			c[i][j] = a[i][j] + b[i][j];
 		}
 	}
 }
 
-void linalg::matsubtract(
-	vector<vector<double>>& a, vector<vector<double>>& b, vector<vector<double>>& c, int n1, int n2)
+void linalg::subtract(Vector& a, Vector& b, Vector& c)
 {
-	// a is n1 x n2
-	// b is n1 x n2
-	// c is n1 x n2
-	int i, j;
-	for(i = 0; i < n1; i++)
+	int i;
+	for(i = 0; i < a.size(); i++)
 	{
-		for(j = 0; j < n2; j++)
+		c[i] = a[i] - b[i];
+	}
+}
+
+void linalg::subtract(Matrix& a, Matrix& b, Matrix& c)
+{
+	int i, j;
+	for(i = 0; i < a.nrows(); i++)
+	{
+		for(j = 0; j < a.ncols(); j++)
 		{
 			c[i][j] = a[i][j] - b[i][j];
 		}
 	}
 }
 
-void linalg::weightedsum(vector<double>& w, vector<vector<double>>& a, vector<double>& b, int n1, int n2)
+void linalg::weightedsum(Vector& w, std::vector<Vector>& a, Vector& b)
 {
-	// w is n1 x 1
-	// a is n1 x n2
-	// b is n2 x 1
 	int i, j;
-	setzero(b, n2);
-
-	for(i = 0; i < n1; i++)
+	setzero(b);
+	for(i = 0; i < a.size(); i++)
 	{
-		for(j = 0; j < n2; j++)
+		for(j = 0; j < b.size(); j++)
 		{
 			b[j] += w[i] * a[i][j];
 		}
@@ -193,30 +145,15 @@ void linalg::weightedsum(vector<double>& w, vector<vector<double>>& a, vector<do
 }
 
 void linalg::weightedmult(
-	vector<double>& w,
-	vector<vector<double>>& a,
-	vector<double>& abar,
-	vector<vector<double>>& b,
-	vector<double>& bbar,
-	vector<vector<double>>& c,
-	int n1,
-	int n2,
-	int n3)
+	Vector& w, std::vector<Vector>& a, Vector& abar, std::vector<Vector>& b, Vector& bbar, Matrix& c)
 {
-	// w    is n1 x 1
-	// a    is n1 x n2
-	// abar is n2 x 1
-	// b    is n1 x n3
-	// bbar is n3 x 1
-	// c    is n2 x n3
 	int i, j, k;
-	setzero(c, n2, n3);
-
-	for(i = 0; i < n1; i++)
+	setzero(c);
+	for(i = 0; i < a.size(); i++)
 	{
-		for(j = 0; j < n2; j++)
+		for(j = 0; j < abar.size(); j++)
 		{
-			for(k = 0; k < n3; k++)
+			for(k = 0; k < bbar.size(); k++)
 			{
 				c[j][k] += w[i] * (a[i][j] - abar[j]) * (b[i][k] - bbar[k]);
 			}
