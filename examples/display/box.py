@@ -9,27 +9,36 @@ from OpenGL.GLU import *
 
 import serial
 from serial.serialutil import SerialException
-import kalmanfilters
+
+from kalmanfilters import cvqekf
+from kalmanfilters.linalg import Vector, Matrix
+from kalmanfilters.sensors import accel, gyro, mag
 
 
-def get_rot_mat(phi, theta, psi):
+def q_to_mat4(q):
+    qw, qx, qy, qz = q
+
     R = [
         [
-            cos(psi) * cos(theta),
-            sin(phi) * sin(theta) * cos(psi) - sin(psi) * cos(phi),
-            sin(phi) * sin(psi) + sin(theta) * cos(phi) * cos(psi),
+            2 * (qw * qw + qx * qx) - 1,
+            2 * (qx * qy - qw * qz),
+            2 * (qx * qz + qw * qy),
             0.0,
         ],
         [
-            sin(psi) * cos(theta),
-            sin(phi) * sin(psi) * sin(theta) + cos(phi) * cos(psi),
-            -sin(phi) * cos(psi) + sin(psi) * sin(theta) * cos(phi),
+            2 * (qx * qy + qw * qz),
+            2 * (qw * qw + qy * qy) - 1,
+            2 * (qy * qz - qw * qx),
             0.0,
         ],
-        [-sin(theta), sin(phi) * cos(theta), cos(phi) * cos(theta), 0.0],
+        [
+            2 * (qx * qz - qw * qy),
+            2 * (qy * qz + qw * qx),
+            2 * (qw * qw + qz * qz) - 1,
+            0.0,
+        ],
         [0.0, 0.0, 0.0, 1.0],
     ]
-
     return R
 
 
@@ -124,18 +133,20 @@ def main():
     ser = serial.Serial("/dev/tty.usbmodem205E3072594D1", 9600)
     ser.flushInput()
 
-    state = [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    state_unc = [
-        [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
-    ]
+    state = Vector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    state_unc = Matrix(
+        [
+            [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+        ]
+    )
 
-    kf = kalmanfilters.cvqekf(5.0, state, state_unc)
+    kf = cvqekf(5.0, state, state_unc)
 
     microsprev = 0.0
 
@@ -176,34 +187,34 @@ def main():
                 dt = (micros - microsprev) * 1e-6
                 microsprev = micros
 
-                accel = kalmanfilters.sensors.accel(x, y, z, 0.25, 0.25, 0.25)
+                Z = accel(x, y, z, 0.25, 0.25, 0.25)
 
                 # run kf step
                 kf.predict(dt)
-                kf.update(accel)
+                kf.update(Z)
 
             elif sensor == "gyro":
                 dt = (micros - microsprev) * 1e-6
                 microsprev = micros
 
-                gyro = kalmanfilters.sensors.gyro(x, y, z, 0.25, 0.25, 0.25)
+                Z = gyro(x, y, z, 0.25, 0.25, 0.25)
 
                 # run kf step
                 kf.predict(dt)
-                kf.update(gyro)
+                kf.update(Z)
 
             elif sensor == "mag":
                 dt = (micros - microsprev) * 1e-6
                 microsprev = micros
 
-                mag = kalmanfilters.sensors.mag(x, y, z, 45.0, 45.0, 45.0)
+                Z = mag(x, y, z, 45.0, 45.0, 45.0)
 
                 # run kf step
                 kf.predict(dt)
-                kf.update(mag)
+                kf.update(Z)
 
             # print(kf.state, end="\r")
-            qw, qx, qy, qz, _, _, _ = kf.state
+            qw, qx, qy, qz, _, _, _ = kf.get_state().tovec()
 
         except (KeyboardInterrupt, SerialException) as e:
             print(e)
@@ -213,7 +224,7 @@ def main():
             pass
 
         glMatrixMode(GL_MODELVIEW)
-        rot = np.array(kalmanfilters.quaternion.q_to_mat4([qw, qx, qy, qz]))
+        rot = q_to_mat4([qw, qx, qy, qz])
         glLoadMatrixf(rot)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
