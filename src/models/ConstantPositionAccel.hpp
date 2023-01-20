@@ -1,19 +1,16 @@
 #ifndef _CPACCLMODEL_HPP_
 #define _CPACCLMODEL_HPP_
 #include <vector>
+#include "linalg/linalg.hpp"
 #include "sensors/sensors.hpp"
 
 struct ConstantPositionAccelMotionModel
 {
-	void operator()(
-		double delta,
-		std::vector<double>& state,
-		std::vector<std::vector<double>>& jac,
-		std::vector<std::vector<double>>& process_unc);
+	void operator()(double delta, linalg::Vector& state, linalg::Matrix& jac, linalg::Matrix& process_unc);
 
-	void predict(double delta, std::vector<double>& state);
-	void derivs(double delta, std::vector<double>& state, std::vector<std::vector<double>>& jac);
-	void getProcessUncertainty(double delta, std::vector<std::vector<double>>& process_unc);
+	void predict(double delta, linalg::Vector& state);
+	void derivs(double delta, linalg::Vector& state, linalg::Matrix& jac);
+	void getProcessUncertainty(double delta, linalg::Matrix& process_unc);
 
 	const int statedim = 2;
 	double q;
@@ -22,16 +19,16 @@ struct ConstantPositionAccelMotionModel
 struct ConstantPositionAccelMeasurementModel
 {
 	void operator()(
-		std::vector<double>& state,
+		linalg::Vector& state,
 		sensors::accel& accel,
-		std::vector<double>& y,
-		std::vector<std::vector<double>>& jac,
-		std::vector<std::vector<double>>& measure_unc);
+		linalg::Vector& y,
+		linalg::Matrix& jac,
+		linalg::Matrix& measure_unc);
 
-	void innovation(std::vector<double>& state, sensors::accel& accel, std::vector<double>& y);
-	void derivs(std::vector<double>& state, sensors::accel& accel, std::vector<std::vector<double>>& jac);
-	void getMeasurementUncertainty(sensors::accel& accel, std::vector<std::vector<double>>& measure_unc);
-	void final(std::vector<double>& state, std::vector<std::vector<double>>& state_unc) { }
+	void innovation(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y);
+	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);
+	void getMeasurementUncertainty(sensors::accel& accel, linalg::Matrix& measure_unc);
+	void final(linalg::Vector& state, linalg::Matrix& state_unc) { }
 
 	const int statedim = 2;
 	const int measuredim = 3;

@@ -8,8 +8,8 @@
 #include "sensors/sensors.hpp"
 #include "kalmanfilter/ExtendedKalmanFilter.hpp"
 // #include "kalmanfilter/UnscentedKalmanFilter.hpp"
-// #include "models/ConstantPositionAccel.hpp"
-// #include "models/ConstantPositionAccelMagQuat.hpp"
+#include "models/ConstantPositionAccel.hpp"
+#include "models/ConstantPositionAccelMagQuat.hpp"
 // #include "models/ConstantVelocityAccelGyro.hpp"
 // #include "models/ConstantVelocityAccelGyroMag.hpp"
 #include "models/ConstantVelocityAccelGyroMagQuat.hpp"
@@ -54,9 +54,9 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def_readwrite("yunc", &sensors::accel::yunc)
         .def_readwrite("zunc", &sensors::accel::zunc);
 
-    // py::module quaternion = mod.def_submodule("quaternion", "misc. quaternion utilities.");
-    // quaternion.def("q_to_euler", py::overload_cast<std::vector<double>>(&quaternion::q_to_euler));
-    // quaternion.def("q_to_mat4", py::overload_cast<std::vector<double>>(&quaternion::q_to_mat4));
+    py::module quaternion = mod.def_submodule("quaternion", "misc. quaternion utilities.");
+    quaternion.def("q_to_euler", &quaternion::q_to_euler);
+    quaternion.def("q_to_mat4", &quaternion::q_to_mat4);
 
     py::module linalg = mod.def_submodule("linalg", "misc. linear algebra utilities.");
     py::class_<Vector>(linalg, "Vector")
@@ -66,28 +66,30 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def(py::init<vector<vector<double>>&>())
         .def("tovec", &Matrix::tovec);
 
-    // typedef ExtendedKalmanFilter<ConstantPositionAccelMotionModel, ConstantPositionAccelMeasurementModel> cpekf;
-    // py::class_<cpekf>(mod, "cpekf")
-    //     .def(py::init<double, vector<double>, vector<vector<double>>>())
-    //     .def("predict", &cpekf::predict)
-    //     .def("update", &cpekf::update<sensors::accel&>)
-    //     .def_readwrite("state", &cpekf::state)
-    //     .def_readwrite("state_unc", &cpekf::state_unc)
-    //     .def_readwrite("innovation", &cpekf::innovation)
-    //     .def_readwrite("innovation_unc", &cpekf::innovation_unc)
-    //     .def_readwrite("dhdx", &cpekf::dhdx);
+    typedef ExtendedKalmanFilter<ConstantPositionAccelMotionModel, ConstantPositionAccelMeasurementModel> cpekf;
+    py::class_<cpekf>(mod, "cpekf")
+        .def(py::init<double, Vector, Matrix>())
+        .def("set_state", &cpekf::set_state)
+        .def("set_state_unc", &cpekf::set_state_unc)
+        .def("get_state", &cpekf::get_state)
+        .def("get_state_unc", &cpekf::get_state_unc)
+        .def("get_innovation", &cpekf::get_innovation)
+        .def("get_innovation_unc", &cpekf::get_innovation_unc)
+        .def("predict", &cpekf::predict)
+        .def("update", &cpekf::update<sensors::accel&>);
 
-    // typedef ExtendedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel> cpqekf;
-    // py::class_<cpqekf>(mod, "cpqekf")
-    //     .def(py::init<double, vector<double>, vector<vector<double>>>())
-    //     .def("predict", &cpqekf::predict)
-    //     .def("update", &cpqekf::update<sensors::accel&>)
-    //     .def("update", &cpqekf::update<sensors::mag&>)
-    //     .def_readwrite("state", &cpqekf::state)
-    //     .def_readwrite("state_unc", &cpqekf::state_unc)
-    //     .def_readwrite("innovation", &cpqekf::innovation)
-    //     .def_readwrite("innovation_unc", &cpqekf::innovation_unc)
-    //     .def_readwrite("dhdx", &cpqekf::dhdx);
+    typedef ExtendedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel> cpqekf;
+    py::class_<cpqekf>(mod, "cpqekf")
+        .def(py::init<double, Vector, Matrix>())
+        .def("set_state", &cpqekf::set_state)
+        .def("set_state_unc", &cpqekf::set_state_unc)
+        .def("get_state", &cpqekf::get_state)
+        .def("get_state_unc", &cpqekf::get_state_unc)
+        .def("get_innovation", &cpqekf::get_innovation)
+        .def("get_innovation_unc", &cpqekf::get_innovation_unc)
+        .def("predict", &cpqekf::predict)
+        .def("update", &cpqekf::update<sensors::accel&>)
+        .def("update", &cpqekf::update<sensors::mag&>);
 
     // typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
     // py::class_<cvekf>(mod, "cvekf")
@@ -118,7 +120,6 @@ PYBIND11_MODULE(kalmanfilters, mod) {
     //     .def_readwrite("measurement_sigma_points", &cvukf::measurement_sigma_points);
 
     typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel> cvqekf;
-
     py::class_<cvqekf>(mod, "cvqekf")
         .def(py::init<double, Vector, Matrix>())
         .def("set_state", &cvqekf::set_state)

@@ -4,13 +4,12 @@
 using namespace std;
 using namespace linalg;
 
-void ConstantPositionAccelMagQuatMotionModel::predict(double delta, vector<double>& state)
+void ConstantPositionAccelMagQuatMotionModel::predict(double delta, Vector& state)
 {
 	// x = f(x) ~ x
 }
 
-void ConstantPositionAccelMagQuatMotionModel::derivs(
-	double delta, vector<double>& state, vector<vector<double>>& jac)
+void ConstantPositionAccelMagQuatMotionModel::derivs(double delta, Vector& state, Matrix& jac)
 {
 	jac[0][0] = jac[1][1] = jac[2][2] = jac[3][3] = 1.0;
 	jac[0][1] = jac[0][2] = jac[0][3] = 0.0;
@@ -19,8 +18,7 @@ void ConstantPositionAccelMagQuatMotionModel::derivs(
 	jac[3][0] = jac[3][1] = jac[3][2] = 0.0;
 }
 
-void ConstantPositionAccelMagQuatMotionModel::getProcessUncertainty(
-	double delta, vector<vector<double>>& process_unc)
+void ConstantPositionAccelMagQuatMotionModel::getProcessUncertainty(double delta, Matrix& process_unc)
 {
 	// x = f(x) ~ x
 	// sigma = df/dx * sigma * df/dx^T + Q ~ sigma + Q
@@ -31,15 +29,14 @@ void ConstantPositionAccelMagQuatMotionModel::getProcessUncertainty(
 }
 
 void ConstantPositionAccelMagQuatMotionModel::operator()(
-	double delta, vector<double>& state, vector<vector<double>>& jac, vector<vector<double>>& process_unc)
+	double delta, Vector& state, Matrix& jac, Matrix& process_unc)
 {
 	derivs(delta, state, jac);
 	getProcessUncertainty(delta, process_unc);
 	predict(delta, state);
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::innovation(
-	vector<double>& state, sensors::accel& accel, vector<double>& y)
+void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
 {
 	// run trig functions once
 	double qw, qx, qy, qz;
@@ -55,8 +52,7 @@ void ConstantPositionAccelMagQuatMeasurementModel::innovation(
 	y[2] = accel.z - (g * (2 * qw * qw + 2 * qz * qz - 1));
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::innovation(
-	vector<double>& state, sensors::mag& mag, vector<double>& y)
+void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::mag& mag, Vector& y)
 {
 	// run trig functions once
 	double qw, qx, qy, qz;
@@ -76,11 +72,7 @@ void ConstantPositionAccelMagQuatMeasurementModel::innovation(
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::operator()(
-	vector<double>& state,
-	sensors::accel& accel,
-	vector<double>& y,
-	vector<vector<double>>& jac,
-	vector<vector<double>>& measure_unc)
+	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac, Matrix& measure_unc)
 {
 	innovation(state, accel, y);
 	derivs(state, accel, jac);
@@ -88,19 +80,14 @@ void ConstantPositionAccelMagQuatMeasurementModel::operator()(
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::operator()(
-	vector<double>& state,
-	sensors::mag& mag,
-	vector<double>& y,
-	vector<vector<double>>& jac,
-	vector<vector<double>>& measure_unc)
+	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac, Matrix& measure_unc)
 {
 	innovation(state, mag, y);
 	derivs(state, mag, jac);
 	getMeasurementUncertainty(mag, measure_unc);
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::derivs(
-	vector<double>& state, sensors::accel& accel, vector<vector<double>>& jac)
+void ConstantPositionAccelMagQuatMeasurementModel::derivs(Vector& state, sensors::accel& accel, Matrix& jac)
 {
 	double qw, qx, qy, qz;
 	qw = state[0];
@@ -122,8 +109,7 @@ void ConstantPositionAccelMagQuatMeasurementModel::derivs(
 	jac[2][3] = 4 * g * qz;
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::derivs(
-	vector<double>& state, sensors::mag& mag, vector<vector<double>>& jac)
+void ConstantPositionAccelMagQuatMeasurementModel::derivs(Vector& state, sensors::mag& mag, Matrix& jac)
 {
 	double qw, qx, qy, qz;
 	qw = state[0];
@@ -146,7 +132,7 @@ void ConstantPositionAccelMagQuatMeasurementModel::derivs(
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::getMeasurementUncertainty(
-	sensors::accel& accel, vector<vector<double>>& measure_unc)
+	sensors::accel& accel, Matrix& measure_unc)
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = accel.xunc;
@@ -155,7 +141,7 @@ void ConstantPositionAccelMagQuatMeasurementModel::getMeasurementUncertainty(
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::getMeasurementUncertainty(
-	sensors::mag& mag, vector<vector<double>>& measure_unc)
+	sensors::mag& mag, Matrix& measure_unc)
 {
 	// fill measurement uncertainty matrix
 	measure_unc[0][0] = mag.xunc;

@@ -1,22 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import kalmanfilters
+from kalmanfilters import cpqekf
+from kalmanfilters.linalg import Vector, Matrix
+from kalmanfilters.sensors import accel, gyro, mag
 
-state = [1.0, 0.0, 0.0, 0.0]
-state_unc = [
-    [1.0, 0.0, 0.0, 0.0],
-    [0.0, 1.0, 0.0, 0.0],
-    [0.0, 0.0, 1.0, 0.0],
-    [0.0, 0.0, 0.0, 1.0],
-]
+state = Vector([1.0, 0.0, 0.0, 0.0])
+state_unc = Matrix(
+    [
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
+)
 
-kf = kalmanfilters.cpqekf(0.01, state, state_unc)
+kf = cpqekf(0.1, state, state_unc)
 
 microsprev = 0.0
-
-t = []
-euler = []
 
 tacc = []
 acc = []
@@ -42,55 +43,38 @@ with open("examples/data/data2.txt", "r") as f:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            accel = kalmanfilters.sensors.accel(x, y, z, 0.25, 0.25, 0.25)
+            Z = accel(x, y, z, 0.025, 0.025, 0.025)
 
             # run kf step
             kf.predict(dt)
-            kf.update(accel)
+            kf.update(Z)
 
             tacc.append(micros)
             acc.append([x, y, z])
-            accp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
-            jac = kf.dhdx
-            s = kf.innovation_unc
+            Y = kf.get_innovation().tovec()
+            accp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
             accpunc.append(s)
 
         elif sensor == "mag":
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            mag = kalmanfilters.sensors.mag(x, y, z, 450.0, 450.0, 450.0)
+            Z = mag(x, y, z, 45.0, 45.0, 45.0)
 
             # run kf step
             kf.predict(dt)
-            kf.update(mag)
-
-            jac = kf.dhdx
-            s = kf.innovation_unc
+            kf.update(Z)
 
             tmg.append(micros)
             mg.append([x, y, z])
-            mgp.append(
-                [x - kf.innovation[0], y - kf.innovation[1], z - kf.innovation[2]]
-            )
+            Y = kf.get_innovation().tovec()
+            mgp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
             mgpunc.append(s)
 
-        t.append(micros)
-        euler.append(kalmanfilters.quaternion.q_to_euler(kf.state))
-        # print('state:     \n', kf.state)
+        # print("state:     \n", kf.state)
         # print('state_unc: \n', kf.state_unc)
-
-
-euler = np.array(euler)
-fig, ax = plt.subplots(3, 1)
-
-for i in range(3):
-    ax[i].plot(t, euler[:, i])
-    ax[i].set_ylim(-np.pi, np.pi)
-
-plt.show()
 
 acc = np.array(acc)
 accp = np.array(accp)
