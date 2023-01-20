@@ -171,6 +171,52 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::operator()(
 	predict(delta, state);
 }
 
+void ConstantVelocityAccelGyroMagQuatMeasurementModel::predict(
+	Vector& state, sensors::accel& accel, Vector& y)
+{
+	double qx, qy, qz, qw;
+	qw = state[0];
+	qx = state[1];
+	qy = state[2];
+	qz = state[3];
+
+	// calculate innovation
+	// y = z - h(x)
+	y[0] = (g * (-2 * qw * qy + 2 * qx * qz));
+	y[1] = (g * (2 * qw * qx + 2 * qy * qz));
+	y[2] = (g * (2 * qw * qw + 2 * qz * qz - 1));
+}
+
+void ConstantVelocityAccelGyroMagQuatMeasurementModel::predict(Vector& state, sensors::gyro& gyro, Vector& y)
+{
+	// calculate innovation
+	// y = z - h(x)
+	y[0] = state[4];
+	y[1] = state[5];
+	y[2] = state[6];
+}
+
+void ConstantVelocityAccelGyroMagQuatMeasurementModel::predict(Vector& state, sensors::mag& mag, Vector& y)
+{
+	double qx, qy, qz, qw;
+	qw = state[0];
+	qx = state[1];
+	qy = state[2];
+	qz = state[3];
+
+	// calculate innovation
+	// y = z - h(x)
+	y[0] =
+		(mx * (2 * qw * qw + 2 * qx * qx - 1) + my * (2 * qw * qz + 2 * qx * qy) +
+		 mz * (-2 * qw * qy + 2 * qx * qz));
+	y[1] =
+		(mx * (-2 * qw * qz + 2 * qx * qy) + my * (2 * qw * qw + 2 * qy * qy - 1) +
+		 mz * (2 * qw * qx + 2 * qy * qz));
+	y[2] =
+		(mx * (2 * qw * qy + 2 * qx * qz) + my * (-2 * qw * qx + 2 * qy * qz) +
+		 mz * (2 * qw * qw + 2 * qz * qz - 1));
+}
+
 void ConstantVelocityAccelGyroMagQuatMeasurementModel::innovation(
 	Vector& state, sensors::accel& accel, Vector& y)
 {

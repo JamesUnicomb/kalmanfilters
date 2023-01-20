@@ -119,8 +119,14 @@ struct SVD
 	void sqrtm(Matrix& asqrtm);
 };
 // statistial linear algebra routines
-void weightedsum(Vector& w, Matrix& a, Vector& b);
-void weightedmult(Vector& w, Matrix& a, Vector& abar, Matrix& b, Vector& bbar, Matrix& c);
+void weightedsum(Vector& w, std::vector<Vector>& a, Vector& b);
+void weightedmult(
+	Vector& w,
+	std::vector<Vector>& a,
+	Vector& abar,
+	std::vector<Vector>& b,
+	Vector& bbar,
+	Matrix& c);
 }; // namespace linalg
 
 #endif /* _LINALG_HPP_ */

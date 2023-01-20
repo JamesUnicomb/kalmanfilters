@@ -11,6 +11,7 @@ struct ConstantVelocityAccelGyroMagMotionModel
 	void predict(double delta, linalg::Vector& state);
 	void derivs(double delta, linalg::Vector& state, linalg::Matrix& jac);
 	void getProcessUncertainty(double delta, linalg::Matrix& process_unc);
+	void final(linalg::Vector& state, linalg::Matrix& state_unc) { }
 
 	const int statedim = 6;
 	double q;

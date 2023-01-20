@@ -23,30 +23,6 @@ public:
     sigma = (I - K * dh/dx) * sigma
     */
 
-	// x and sigma
-	linalg::Vector state;
-	linalg::Matrix state_unc;
-
-	// df/dx, df/dx^T, dh/dx, dh/dx^T
-	linalg::Matrix dfdx, dfdxT, dhdx, dhdxT;
-
-	// Q and R
-	linalg::Matrix process_unc, measure_unc;
-
-	// y and S
-	linalg::Vector innovation;
-	linalg::Matrix innovation_unc;
-
-	// K
-	linalg::Matrix gain;
-
-	// temp vectors/matrices for calculations
-	linalg::Matrix innovation_unc_inv;
-	linalg::Vector dx;
-	linalg::Matrix eye;
-	linalg::Matrix tmpunc;
-	linalg::Matrix tmpnn, tmpnm, tmpmn, tmpmm;
-
 	ExtendedKalmanFilter(double q, linalg::Vector state, linalg::Matrix state_unc)
 		: state(state)
 		, state_unc(state_unc)
@@ -85,6 +61,7 @@ public:
 			eye[i][i] = 1.0;
 		}
 
+		// temporary matrices
 		tmpnn = linalg::Matrix(statedim, statedim, 0.0);
 		tmpnm = linalg::Matrix(statedim, measuredim, 0.0);
 		tmpmn = linalg::Matrix(measuredim, statedim, 0.0);
@@ -132,6 +109,8 @@ public:
 		linalg::mult(tmpunc, dfdxT, state_unc);
 
 		linalg::add(state_unc, process_unc, state_unc);
+
+		f.final(state, state_unc);
 	}
 
 	template <typename Z>
@@ -167,6 +146,30 @@ public:
 private:
 	F f;
 	H h;
+
+	// x and sigma
+	linalg::Vector state;
+	linalg::Matrix state_unc;
+
+	// df/dx, df/dx^T, dh/dx, dh/dx^T
+	linalg::Matrix dfdx, dfdxT, dhdx, dhdxT;
+
+	// Q and R
+	linalg::Matrix process_unc, measure_unc;
+
+	// y and S
+	linalg::Vector innovation;
+	linalg::Matrix innovation_unc;
+
+	// K
+	linalg::Matrix gain;
+
+	// temp vectors/matrices for calculations
+	linalg::Matrix innovation_unc_inv;
+	linalg::Vector dx;
+	linalg::Matrix eye;
+	linalg::Matrix tmpunc;
+	linalg::Matrix tmpnn, tmpnm, tmpmn, tmpmm;
 
 	// model and measurement dimension
 	const int statedim;

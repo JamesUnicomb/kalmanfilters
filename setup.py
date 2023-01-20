@@ -16,8 +16,6 @@ ext_modules = [
             "src/quaternion/quaternion.cpp",
             "src/models/ConstantPositionAccel.cpp",
             "src/models/ConstantPositionAccelMagQuat.cpp",
-            # "src/models/ConstantVelocityAccel.cpp",
-            # "src/models/ConstantVelocityAccelGyro.cpp",
             "src/models/ConstantVelocityAccelGyroMag.cpp",
             "src/models/ConstantVelocityAccelGyroMagQuat.cpp",
             "main.cpp",

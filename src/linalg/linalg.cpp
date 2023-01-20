@@ -131,11 +131,11 @@ void linalg::subtract(Matrix& a, Matrix& b, Matrix& c)
 	}
 }
 
-void linalg::weightedsum(Vector& w, Matrix& a, Vector& b)
+void linalg::weightedsum(Vector& w, std::vector<Vector>& a, Vector& b)
 {
 	int i, j;
 	setzero(b);
-	for(i = 0; i < a.nrows(); i++)
+	for(i = 0; i < a.size(); i++)
 	{
 		for(j = 0; j < b.size(); j++)
 		{
@@ -144,11 +144,12 @@ void linalg::weightedsum(Vector& w, Matrix& a, Vector& b)
 	}
 }
 
-void linalg::weightedmult(Vector& w, Matrix& a, Vector& abar, Matrix& b, Vector& bbar, Matrix& c)
+void linalg::weightedmult(
+	Vector& w, std::vector<Vector>& a, Vector& abar, std::vector<Vector>& b, Vector& bbar, Matrix& c)
 {
 	int i, j, k;
 	setzero(c);
-	for(i = 0; i < a.nrows(); i++)
+	for(i = 0; i < a.size(); i++)
 	{
 		for(j = 0; j < abar.size(); j++)
 		{
