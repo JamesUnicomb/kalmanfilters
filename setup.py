@@ -18,7 +18,7 @@ ext_modules = [
             "src/models/ConstantPositionAccelMagQuat.cpp",
             # "src/models/ConstantVelocityAccel.cpp",
             # "src/models/ConstantVelocityAccelGyro.cpp",
-            # "src/models/ConstantVelocityAccelGyroMag.cpp",
+            "src/models/ConstantVelocityAccelGyroMag.cpp",
             "src/models/ConstantVelocityAccelGyroMagQuat.cpp",
             "main.cpp",
         ],

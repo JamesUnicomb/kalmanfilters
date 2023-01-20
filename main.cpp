@@ -11,7 +11,7 @@
 #include "models/ConstantPositionAccel.hpp"
 #include "models/ConstantPositionAccelMagQuat.hpp"
 // #include "models/ConstantVelocityAccelGyro.hpp"
-// #include "models/ConstantVelocityAccelGyroMag.hpp"
+#include "models/ConstantVelocityAccelGyroMag.hpp"
 #include "models/ConstantVelocityAccelGyroMagQuat.hpp"
 
 // clang-format off
@@ -91,18 +91,19 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cpqekf::update<sensors::accel&>)
         .def("update", &cpqekf::update<sensors::mag&>);
 
-    // typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
-    // py::class_<cvekf>(mod, "cvekf")
-    //     .def(py::init<double, vector<double>, vector<vector<double>>>())
-    //     .def("predict", &cvekf::predict)
-    //     .def("update", &cvekf::update<sensors::accel&>)
-    //     .def("update", &cvekf::update<sensors::gyro&>)
-    //     .def("update", &cvekf::update<sensors::mag&>)
-    //     .def_readwrite("state", &cvekf::state)
-    //     .def_readwrite("state_unc", &cvekf::state_unc)
-    //     .def_readwrite("innovation", &cvekf::innovation)
-    //     .def_readwrite("innovation_unc", &cvekf::innovation_unc)
-    //     .def_readwrite("dhdx", &cvekf::dhdx);
+    typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
+    py::class_<cvekf>(mod, "cvekf")
+        .def(py::init<double, Vector, Matrix>())
+        .def("set_state", &cvekf::set_state)
+        .def("set_state_unc", &cvekf::set_state_unc)
+        .def("get_state", &cvekf::get_state)
+        .def("get_state_unc", &cvekf::get_state_unc)
+        .def("get_innovation", &cvekf::get_innovation)
+        .def("get_innovation_unc", &cvekf::get_innovation_unc)
+        .def("predict", &cvekf::predict)
+        .def("update", &cvekf::update<sensors::accel&>)
+        .def("update", &cvekf::update<sensors::gyro&>)
+        .def("update", &cvekf::update<sensors::mag&>);
 
     // typedef UnscentedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvukf;
     // py::class_<cvukf>(mod, "cvukf")
