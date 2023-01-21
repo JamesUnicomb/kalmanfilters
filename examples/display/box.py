@@ -13,33 +13,7 @@ from serial.serialutil import SerialException
 from kalmanfilters import cvqekf
 from kalmanfilters.linalg import Vector, Matrix
 from kalmanfilters.sensors import accel, gyro, mag
-
-
-def q_to_mat4(q):
-    qw, qx, qy, qz = q
-
-    R = [
-        [
-            2 * (qw * qw + qx * qx) - 1,
-            2 * (qx * qy - qw * qz),
-            2 * (qx * qz + qw * qy),
-            0.0,
-        ],
-        [
-            2 * (qx * qy + qw * qz),
-            2 * (qw * qw + qy * qy) - 1,
-            2 * (qy * qz - qw * qx),
-            0.0,
-        ],
-        [
-            2 * (qx * qz - qw * qy),
-            2 * (qy * qz + qw * qx),
-            2 * (qw * qw + qz * qz) - 1,
-            0.0,
-        ],
-        [0.0, 0.0, 0.0, 1.0],
-    ]
-    return R
+from kalmanfilters.quaternion import q_to_euler, q_to_mat4
 
 
 axis_verts = (
@@ -220,11 +194,11 @@ def main():
             print(e)
             break
         except Exception as e:
-            print(sensor, e)
+            print(e)
             pass
 
         glMatrixMode(GL_MODELVIEW)
-        rot = q_to_mat4([qw, qx, qy, qz])
+        rot = q_to_mat4(Vector([qw, qx, qy, qz])).tovec()
         glLoadMatrixf(rot)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

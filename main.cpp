@@ -54,8 +54,8 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def_readwrite("zunc", &sensors::accel::zunc);
 
     py::module quaternion = mod.def_submodule("quaternion", "misc. quaternion utilities.");
-    quaternion.def("q_to_euler", &quaternion::q_to_euler);
-    quaternion.def("q_to_mat4", &quaternion::q_to_mat4);
+    quaternion.def("q_to_euler", py::overload_cast<Vector&>(&quaternion::q_to_euler));
+    quaternion.def("q_to_mat4", py::overload_cast<Vector&>(&quaternion::q_to_mat4));
 
     py::module linalg = mod.def_submodule("linalg", "misc. linear algebra utilities.");
     py::class_<Vector>(linalg, "Vector")

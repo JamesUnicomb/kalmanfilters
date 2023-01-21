@@ -13,37 +13,7 @@ from serial.serialutil import SerialException
 from kalmanfilters import cvqekf
 from kalmanfilters.linalg import Vector, Matrix
 from kalmanfilters.sensors import accel, gyro, mag
-
-
-def get_rot_mat(phi, theta, psi):
-    R = [
-        [
-            cos(psi) * cos(theta),
-            sin(phi) * sin(theta) * cos(psi) - sin(psi) * cos(phi),
-            sin(phi) * sin(psi) + sin(theta) * cos(phi) * cos(psi),
-            0.0,
-        ],
-        [
-            sin(psi) * cos(theta),
-            sin(phi) * sin(psi) * sin(theta) + cos(phi) * cos(psi),
-            -sin(phi) * cos(psi) + sin(psi) * sin(theta) * cos(phi),
-            0.0,
-        ],
-        [-sin(theta), sin(phi) * cos(theta), cos(phi) * cos(theta), 0.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ]
-
-    return R
-
-
-def q_to_euler(q):
-    qw, qx, qy, qz = q
-
-    phi = np.arctan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz)
-    theta = np.arcsin(-2.0 * (qx * qz - qw * qy))
-    psi = np.arctan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz)
-
-    return phi, theta, psi
+from kalmanfilters.quaternion import q_to_euler, q_to_mat4
 
 
 compass_verts = (
@@ -447,10 +417,16 @@ def main():
         glMatrixMode(GL_MODELVIEW)
 
         qw, qx, qy, qz, _, _, _ = kf.get_state().tovec()
-        print(qw, qx, qy, qz)
-        phi, theta, psi = q_to_euler([qw, qx, qy, qz])
+        phi, theta, psi = (q_to_euler(Vector([qw, qx, qy, qz]))).tovec()
 
-        glLoadMatrixf(get_rot_mat(0.0, 0.0, -psi))
+        glLoadMatrixf(
+            [
+                [np.cos(psi), np.sin(psi), 0.0, 0.0],
+                [-np.sin(psi), np.cos(psi), 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+        )
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         Compass()
