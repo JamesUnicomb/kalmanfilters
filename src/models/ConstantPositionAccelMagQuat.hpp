@@ -10,7 +10,7 @@ struct ConstantPositionAccelMagQuatMotionModel
 
 	void predict(double delta, linalg::Vector& state);
 	void derivs(double delta, linalg::Vector& state, linalg::Matrix& jac);
-	void getProcessUncertainty(double delta, linalg::Matrix& process_unc);
+	void getProcessUncertainty(double delta, linalg::Vector& state, linalg::Matrix& process_unc);
 	void final(linalg::Vector& state, linalg::Matrix& state_unc) { }
 
 	const int statedim = 2;
@@ -32,6 +32,8 @@ struct ConstantPositionAccelMagQuatMeasurementModel
 		linalg::Matrix& jac,
 		linalg::Matrix& measure_unc);
 
+	void predict(linalg::Vector& state, sensors::accel& accel, linalg::Vector& h);
+	void predict(linalg::Vector& state, sensors::mag& mag, linalg::Vector& h);
 	void innovation(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y);
 	void innovation(linalg::Vector& state, sensors::mag& mag, linalg::Vector& y);
 	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);

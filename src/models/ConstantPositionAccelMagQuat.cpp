@@ -18,7 +18,8 @@ void ConstantPositionAccelMagQuatMotionModel::derivs(double delta, Vector& state
 	jac[3][0] = jac[3][1] = jac[3][2] = 0.0;
 }
 
-void ConstantPositionAccelMagQuatMotionModel::getProcessUncertainty(double delta, Matrix& process_unc)
+void ConstantPositionAccelMagQuatMotionModel::getProcessUncertainty(
+	double delta, Vector& state, Matrix& process_unc)
 {
 	// x = f(x) ~ x
 	// sigma = df/dx * sigma * df/dx^T + Q ~ sigma + Q
@@ -32,8 +33,44 @@ void ConstantPositionAccelMagQuatMotionModel::operator()(
 	double delta, Vector& state, Matrix& jac, Matrix& process_unc)
 {
 	derivs(delta, state, jac);
-	getProcessUncertainty(delta, process_unc);
+	getProcessUncertainty(delta, state, process_unc);
 	predict(delta, state);
+}
+
+void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensors::accel& accel, Vector& y)
+{
+	double qx, qy, qz, qw;
+	qw = state[0];
+	qx = state[1];
+	qy = state[2];
+	qz = state[3];
+
+	// calculate innovation
+	// y = z - h(x)
+	y[0] = (g * (-2 * qw * qy + 2 * qx * qz));
+	y[1] = (g * (2 * qw * qx + 2 * qy * qz));
+	y[2] = (g * (2 * qw * qw + 2 * qz * qz - 1));
+}
+
+void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensors::mag& mag, Vector& y)
+{
+	double qx, qy, qz, qw;
+	qw = state[0];
+	qx = state[1];
+	qy = state[2];
+	qz = state[3];
+
+	// calculate innovation
+	// y = z - h(x)
+	y[0] =
+		(mx * (2 * qw * qw + 2 * qx * qx - 1) + my * (2 * qw * qz + 2 * qx * qy) +
+		 mz * (-2 * qw * qy + 2 * qx * qz));
+	y[1] =
+		(mx * (-2 * qw * qz + 2 * qx * qy) + my * (2 * qw * qw + 2 * qy * qy - 1) +
+		 mz * (2 * qw * qx + 2 * qy * qz));
+	y[2] =
+		(mx * (2 * qw * qy + 2 * qx * qz) + my * (-2 * qw * qx + 2 * qy * qz) +
+		 mz * (2 * qw * qw + 2 * qz * qz - 1));
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)

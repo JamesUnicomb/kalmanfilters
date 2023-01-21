@@ -90,6 +90,19 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cpqekf::update<sensors::accel&>)
         .def("update", &cpqekf::update<sensors::mag&>);
 
+    typedef UnscentedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel> cpqukf;
+    py::class_<cpqukf>(mod, "cpqukf")
+        .def(py::init<double, Vector, Matrix>())
+        .def("set_state", &cpqukf::set_state)
+        .def("set_state_unc", &cpqukf::set_state_unc)
+        .def("get_state", &cpqukf::get_state)
+        .def("get_state_unc", &cpqukf::get_state_unc)
+        .def("get_innovation", &cpqukf::get_innovation)
+        .def("get_innovation_unc", &cpqukf::get_innovation_unc)
+        .def("predict", &cpqukf::predict)
+        .def("update", &cpqukf::update<sensors::accel&>)
+        .def("update", &cpqukf::update<sensors::mag&>);
+
     typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
     py::class_<cvekf>(mod, "cvekf")
         .def(py::init<double, Vector, Matrix>())
