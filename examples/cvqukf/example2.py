@@ -109,21 +109,27 @@ acc = np.array(acc)
 accp = np.array(accp)
 accpunc = np.array(accpunc)
 
-fig, ax = plt.subplots(3, 1)
+fig, ax = plt.subplots(3, 1, figsize=(8, 5))
 
 for i in range(3):
-    ax[i].scatter(tacc, acc[:, i])
-    ax[i].plot(tacc, accp[:, i])
+    ax[i].scatter(tacc, acc[:, i], label="measurement")
+    ax[i].plot(tacc, accp[:, i], label="estimate")
     ax[i].fill_between(
         tacc,
         accp[:, i] - 2.0 * np.sqrt(accpunc[:, i, i]),
         accp[:, i] + 2.0 * np.sqrt(accpunc[:, i, i]),
         alpha=0.2,
         color="C0",
+        label="unc. (+/-2s)",
     )
 ax[0].set_ylim(-12.0, 12.0)
 ax[1].set_ylim(-12.0, 12.0)
 ax[2].set_ylim(-12.0, 12.0)
+ax[0].set_ylabel("x")
+ax[1].set_ylabel("y")
+ax[2].set_ylabel("z")
+ax[2].set_xlabel("time (micros)")
+ax[2].legend(loc="lower right")
 
 plt.show()
 
@@ -135,19 +141,25 @@ dvpunc = np.array(dvpunc)
 fig, ax = plt.subplots(3, 1, figsize=(8, 5))
 
 for i in range(3):
-    ax[i].scatter(tdv, dv[:, i])
-    ax[i].plot(tdv, dvp[:, i])
+    ax[i].scatter(tdv, dv[:, i], label="measurement")
+    ax[i].plot(tdv, dvp[:, i], label="estimate")
     ax[i].fill_between(
         tdv,
         dvp[:, i] - 2.0 * np.sqrt(dvpunc[:, i, i]),
         dvp[:, i] + 2.0 * np.sqrt(dvpunc[:, i, i]),
         alpha=0.2,
         color="C0",
+        label="unc. (+/-2s)",
     )
 
 ax[0].set_ylim(-7.0, 7.0)
 ax[1].set_ylim(-7.0, 7.0)
 ax[2].set_ylim(-7.0, 7.0)
+ax[0].set_ylabel("p")
+ax[1].set_ylabel("q")
+ax[2].set_ylabel("r")
+ax[2].set_xlabel("time (micros)")
+ax[2].legend(loc="lower right")
 
 plt.show()
 
@@ -156,22 +168,28 @@ mg = np.array(mg)
 mgp = np.array(mgp)
 mgpunc = np.array(mgpunc)
 
-fig, ax = plt.subplots(3, 1)
+fig, ax = plt.subplots(3, 1, figsize=(8, 5))
 
 for i in range(3):
-    ax[i].scatter(tmg, mg[:, i])
-    ax[i].plot(tmg, mgp[:, i])
+    ax[i].scatter(tmg, mg[:, i], label="measurement")
+    ax[i].plot(tmg, mgp[:, i], label="estimate")
     ax[i].fill_between(
         tmg,
         mgp[:, i] - 2.0 * np.sqrt(mgpunc[:, i, i]),
         mgp[:, i] + 2.0 * np.sqrt(mgpunc[:, i, i]),
         alpha=0.2,
         color="C0",
+        label="unc. (+/-2s)",
     )
     ax[i].set_ylim()
 
 ax[0].set_ylim(-57.5, 57.5)
 ax[1].set_ylim(-57.5, 57.5)
 ax[2].set_ylim(-57.5, 57.5)
+ax[0].set_ylabel("x")
+ax[1].set_ylabel("y")
+ax[2].set_ylabel("z")
+ax[2].set_xlabel("time (micros)")
+ax[2].legend(loc="lower right")
 
 plt.show()

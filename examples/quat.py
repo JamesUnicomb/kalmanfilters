@@ -62,10 +62,10 @@ The input measurements will be accel, gyro and mag
 
 F = Matrix(
     [
-        [qw + delta * 0.5 * (-omx * qx - omy * qy - omz * qz)],
-        [qx + delta * 0.5 * (omx * qw + omz * qy - omy * qz)],
-        [qy + delta * 0.5 * (omy * qw - omz * qx + omx * qz)],
-        [qz + delta * 0.5 * (omz * qw + omy * qx - omx * qy)],
+        [qw + delta * 0.5 * (0.0 * qw - omx * qx - omy * qy - omz * qz)],
+        [qx + delta * 0.5 * (omx * qw + 0.0 * qx + omz * qy - omy * qz)],
+        [qy + delta * 0.5 * (omy * qw - omz * qx + 0.0 * qy + omx * qz)],
+        [qz + delta * 0.5 * (omz * qw + omy * qx - omx * qy + 0.0 * qz)],
         [omx],
         [omy],
         [omz],

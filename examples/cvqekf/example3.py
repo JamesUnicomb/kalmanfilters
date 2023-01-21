@@ -1,23 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from kalmanfilters import cvekf
+from kalmanfilters import cvqekf
 from kalmanfilters.linalg import Vector, Matrix
 from kalmanfilters.sensors import accel, gyro, mag
 
-state = Vector([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+state = Vector([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 state_unc = Matrix(
     [
-        [10.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 10.0, 0.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 10.0, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+        [4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
     ]
 )
 
-kf = cvekf(5.0, state, state_unc)
+kf = cvqekf(15.0, state, state_unc)
 
 microsprev = 0.0
 
@@ -36,7 +37,8 @@ mg = []
 mgp = []
 mgpunc = []
 
-with open("examples/data/data2.txt", "r") as f:
+
+with open("examples/data/data3.txt", "r") as f:
     for r in f.readlines()[1:]:
         sensor, data = r.rstrip().split(":")
         micros, x, y, z = data.split(",")
@@ -50,55 +52,58 @@ with open("examples/data/data2.txt", "r") as f:
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            Z = accel(x, y, z, 0.025, 0.025, 0.025)
+            Z = accel(x, y, z, 0.5, 0.5, 0.5)
 
             # run kf step
             kf.predict(dt)
             kf.update(Z)
 
+            Y = kf.get_innovation().tovec()
+
             tacc.append(micros)
             acc.append([x, y, z])
-            Y = kf.get_innovation().tovec()
             accp.append([x - Y[0], y - Y[1], z - Y[2]])
             s = kf.get_innovation_unc().tovec()
             accpunc.append(s)
 
         elif sensor == "gyro":
-            dt = (micros - microsprev) * 1e-6
-            microsprev = micros
+            # dt = (micros - microsprev) * 1e-6
+            # microsprev = micros
 
-            Z = gyro(x, y, z, 0.25, 0.25, 0.25)
+            Z = gyro(x, y, z, 0.5, 0.5, 0.5)
 
             # run kf step
-            kf.predict(dt)
-            kf.update(Z)
+            # kf.predict(dt)
+            # kf.update(gyro)
 
             tdv.append(micros)
             dv.append([x, y, z])
-            Y = kf.get_innovation().tovec()
-            dvp.append([x - Y[0], y - Y[1], z - Y[2]])
-            s = kf.get_innovation_unc().tovec()
+            dvp.append(kf.get_state().tovec()[4:])
+            # jac = kf.dhdx
+            # s = kf.innovation_unc
+            s = np.add(np.array(kf.get_state_unc().tovec())[4:, 4:], 0.5 * np.eye(3))
             dvpunc.append(s)
 
         elif sensor == "mag":
             dt = (micros - microsprev) * 1e-6
             microsprev = micros
 
-            Z = mag(x, y, z, 45.0, 45.0, 45.0)
+            Z = mag(x, y, z, 40.0, 40.0, 40.0)
 
             # run kf step
             kf.predict(dt)
             kf.update(Z)
 
+            Y = kf.get_innovation().tovec()
+
             tmg.append(micros)
             mg.append([x, y, z])
-            Y = kf.get_innovation().tovec()
             mgp.append([x - Y[0], y - Y[1], z - Y[2]])
             s = kf.get_innovation_unc().tovec()
             mgpunc.append(s)
 
-        # print('state:     \n', kf.state)
-        # print('state_unc: \n', kf.state_unc)
+        # print("state:     \n", kf.get_state().tovec())
+        # print("state_unc: \n", kf.get_state_unc().tovec())
 
 acc = np.array(acc)
 accp = np.array(accp)
@@ -146,16 +151,35 @@ for i in range(3):
         color="C0",
         label="unc. (+/-2s)",
     )
-    ax[i].set_ylim(-2.50, 2.50)
 
-ax[0].set_ylim(-5.0, 5.0)
-ax[1].set_ylim(-5.0, 5.0)
-ax[2].set_ylim(-5.0, 5.0)
+ax[0].set_ylim(-7.0, 7.0)
+ax[1].set_ylim(-7.0, 7.0)
+ax[2].set_ylim(-7.0, 7.0)
 ax[0].set_ylabel("p")
 ax[1].set_ylabel("q")
 ax[2].set_ylabel("r")
 ax[2].set_xlabel("time (micros)")
 ax[2].legend(loc="lower right")
+
+plt.show()
+
+
+fig, ax = plt.subplots(1, figsize=(8, 3))
+
+ax.plot(tdv, np.linalg.norm(dv - dvp, axis=1), label="error")
+ax.fill_between(
+    tdv,
+    np.zeros_like(tdv),
+    2.0 * np.sqrt(dvpunc[:, 0, 0] + dvpunc[:, 1, 1] + dvpunc[:, 2, 2]),
+    alpha=0.2,
+    color="C0",
+    label="unc. (+/-2s)",
+)
+
+ax.set_ylim(0.0, 15.0)
+ax.set_ylabel("error")
+ax.set_xlabel("time (micros)")
+ax.legend(loc="upper left")
 
 plt.show()
 
