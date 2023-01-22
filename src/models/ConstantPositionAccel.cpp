@@ -33,7 +33,7 @@ void ConstantPositionAccelMotionModel::operator()(
 	predict(delta, state);
 }
 
-void ConstantPositionAccelMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
+void ConstantPositionAccelMeasurementModel::predict(Vector& state, sensors::accel& accel, Vector& y)
 {
 	// run trig functions once
 	double s0, c0, c1, s1;
@@ -43,10 +43,19 @@ void ConstantPositionAccelMeasurementModel::innovation(Vector& state, sensors::a
 	c1 = cos(state[1]);
 
 	// calculate innovation
+	// y = h(x)
+	y[0] = -s1 * g;
+	y[1] = s0 * c1 * g;
+	y[2] = c0 * c1 * g;
+}
+
+void ConstantPositionAccelMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
+{
+	// calculate innovation
 	// y = z - h(x)
-	y[0] = accel.x - (-s1 * g);
-	y[1] = accel.y - (s0 * c1 * g);
-	y[2] = accel.z - (c0 * c1 * g);
+	predict(state, accel, y);
+	// y = z - y = z - h(x)
+	subtract(accel.vector(), y, y);
 }
 
 void ConstantPositionAccelMeasurementModel::operator()(

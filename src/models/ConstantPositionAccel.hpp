@@ -26,6 +26,7 @@ struct ConstantPositionAccelMeasurementModel
 		linalg::Matrix& jac,
 		linalg::Matrix& measure_unc);
 
+	void predict(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y);
 	void innovation(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y);
 	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);
 	void getMeasurementUncertainty(sensors::accel& accel, linalg::Matrix& measure_unc);

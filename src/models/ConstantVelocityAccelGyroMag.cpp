@@ -102,52 +102,29 @@ void ConstantVelocityAccelGyroMagMeasurementModel::predict(Vector& state, sensor
 
 void ConstantVelocityAccelGyroMagMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
 {
-	// run trig functions once
-	double s0, c0, s1, c1;
-	s0 = sin(state[0]);
-	c0 = cos(state[0]);
-	s1 = sin(state[1]);
-	c1 = cos(state[1]);
-
 	// calculate innovation
 	// y = z - h(x)
-	y[0] = accel.x - (-s1 * g);
-	y[1] = accel.y - (s0 * c1 * g);
-	y[2] = accel.z - (c0 * c1 * g);
+	predict(state, accel, y);
+	// y = z - y = z - h(x)
+	subtract(accel.vector(), y, y);
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::innovation(Vector& state, sensors::gyro& gyro, Vector& y)
 {
-	// run trig functions once
-	double s0, c0, s1, c1;
-	s0 = sin(state[0]);
-	c0 = cos(state[0]);
-	s1 = sin(state[1]);
-	c1 = cos(state[1]);
-
 	// calculate innovation
 	// y = z - h(x)
-	y[0] = gyro.x - (state[3] + s1 * state[5]);
-	y[1] = gyro.y - (c0 * state[4] + s0 * c1 * state[5]);
-	y[2] = gyro.z - (-s0 * state[4] + c0 * c1 * state[5]);
+	predict(state, gyro, y);
+	// y = z - y = z - h(x)
+	subtract(gyro.vector(), y, y);
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::innovation(Vector& state, sensors::mag& mag, Vector& y)
 {
-	// run trig functions once
-	double s0, c0, s1, c1, s2, c2;
-	s0 = sin(state[0]);
-	c0 = cos(state[0]);
-	s1 = sin(state[1]);
-	c1 = cos(state[1]);
-	s2 = sin(state[2]);
-	c2 = cos(state[2]);
-
 	// calculate innovation
-	// y = z - h(x)
-	y[0] = mag.x - (c2 * c1 * mx + s2 * c1 * my - s1 * mz);
-	y[1] = mag.y - ((c2 * s1 * s0 - s2 * c0) * mx + (s2 * s1 * s0 + c2 * c0) * my + c1 * s0 * mz);
-	y[2] = mag.z - ((c2 * s1 * c0 + s2 * s0) * mx + (s2 * s1 * c0 - c2 * s0) * my + c1 * c0 * mz);
+	// y = h(x)
+	predict(state, mag, y);
+	// y = z - y = z - h(x)
+	subtract(mag.vector(), y, y);
 }
 
 void ConstantVelocityAccelGyroMagMeasurementModel::operator()(

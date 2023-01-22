@@ -46,7 +46,7 @@ void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensor
 	qz = state[3];
 
 	// calculate innovation
-	// y = z - h(x)
+	// y = h(x)
 	y[0] = (g * (-2 * qw * qy + 2 * qx * qz));
 	y[1] = (g * (2 * qw * qx + 2 * qy * qz));
 	y[2] = (g * (2 * qw * qw + 2 * qz * qz - 1));
@@ -61,7 +61,7 @@ void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensor
 	qz = state[3];
 
 	// calculate innovation
-	// y = z - h(x)
+	// y = h(x)
 	y[0] =
 		(mx * (2 * qw * qw + 2 * qx * qx - 1) + my * (2 * qw * qz + 2 * qx * qy) +
 		 mz * (-2 * qw * qy + 2 * qx * qz));
@@ -75,37 +75,20 @@ void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensor
 
 void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
 {
-	// run trig functions once
-	double qw, qx, qy, qz;
-	qw = state[0];
-	qx = state[1];
-	qy = state[2];
-	qz = state[3];
-
 	// calculate innovation
 	// y = z - h(x)
-	y[0] = accel.x - (g * (-2 * qw * qy + 2 * qx * qz));
-	y[1] = accel.y - (g * (2 * qw * qx + 2 * qy * qz));
-	y[2] = accel.z - (g * (2 * qw * qw + 2 * qz * qz - 1));
+	predict(state, accel, y);
+	// y = z - y = z - h(x)
+	subtract(accel.vector(), y, y);
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::mag& mag, Vector& y)
 {
-	// run trig functions once
-	double qw, qx, qy, qz;
-	qw = state[0];
-	qx = state[1];
-	qy = state[2];
-	qz = state[3];
-
 	// calculate innovation
-	// y = z - h(x)
-	y[0] = mag.x - (mx * (2 * qw * qw + 2 * qx * qx - 1) + my * (2 * qw * qz + 2 * qx * qy) +
-					mz * (-2 * qw * qy + 2 * qx * qz));
-	y[1] = mag.y - (mx * (-2 * qw * qz + 2 * qx * qy) + my * (2 * qw * qw + 2 * qy * qy - 1) +
-					mz * (2 * qw * qx + 2 * qy * qz));
-	y[2] = mag.z - (mx * (2 * qw * qy + 2 * qx * qz) + my * (-2 * qw * qx + 2 * qy * qz) +
-					mz * (2 * qw * qw + 2 * qz * qz - 1));
+	// y = h(x)
+	predict(state, mag, y);
+	// y = z - y = z - h(x)
+	subtract(mag.vector(), y, y);
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::operator()(
