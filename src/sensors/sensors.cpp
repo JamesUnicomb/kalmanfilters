@@ -10,7 +10,7 @@ sensors::base::base(double x, double y, double z)
 	, xunc(0.0)
 	, yunc(0.0)
 	, zunc(0.0)
-	, v(3)
+	, v(3, 0.0)
 {
 	// initialise measurement vector
 	v[0] = x;
@@ -24,8 +24,8 @@ sensors::base::base(double x, double y, double z, double xunc, double yunc, doub
 	, xunc(xunc)
 	, yunc(yunc)
 	, zunc(zunc)
-	, v(3)
-	, S(3, 3)
+	, v(3, 0.0)
+	, S(3, 3, 0.0)
 {
 	// initialise measurement vector
 	v[0] = x;
@@ -34,15 +34,7 @@ sensors::base::base(double x, double y, double z, double xunc, double yunc, doub
 
 	// initialise uncertainty matrix
 	S[0][0] = xunc;
-	S[0][1] = 0.0;
-	S[0][2] = 0.0;
-
-	S[1][0] = 0.0;
 	S[1][1] = yunc;
-	S[1][2] = 0.0;
-
-	S[2][0] = 0.0;
-	S[2][1] = 0.0;
 	S[2][2] = zunc;
 }
 
