@@ -67,9 +67,8 @@ public:
 		measurement = linalg::Vector(measuredim, 0.0);
 		measurement_sigma_points = std::vector<linalg::Vector>(sigmadim, linalg::Vector(measuredim, 0.0));
 
-		// process and measurement uncertainty matrices
+		// process uncertainty matrix
 		process_unc = linalg::Matrix(statedim, statedim, 0.0);
-		measure_unc = linalg::Matrix(measuredim, measuredim, 0.0);
 
 		// innovation is Nx1
 		innovation = linalg::Vector(measuredim, 0.0);
@@ -159,7 +158,6 @@ public:
 	template <typename Z>
 	void update(Z& z)
 	{
-		h.getMeasurementUncertainty(z, measure_unc);
 		for(int i = 0; i < sigmadim; i++)
 		{
 			h.predict(state_sigma_points[i], z, measurement_sigma_points[i]);
@@ -167,7 +165,7 @@ public:
 		linalg::weightedsum(wm, measurement_sigma_points, measurement);
 		linalg::weightedmult(
 			wc, measurement_sigma_points, measurement, measurement_sigma_points, measurement, innovation_unc);
-		linalg::add(innovation_unc, measure_unc, innovation_unc);
+		innovation_unc += z.unc();
 
 		svdinnovation.dcmp(innovation_unc);
 		svdinnovation.inverse(innovation_unc_inv);
@@ -178,11 +176,7 @@ public:
 		linalg::mult(state_measurement_cov, innovation_unc_inv, gain);
 
 		// update state
-		// TODO: make this generic
-		innovation[0] = z.x - measurement[0];
-		innovation[1] = z.y - measurement[1];
-		innovation[2] = z.z - measurement[2];
-
+		linalg::subtract(z.vec(), measurement, innovation);
 		linalg::mult(gain, innovation, dx);
 		state += dx;
 
@@ -223,8 +217,8 @@ private:
 	// P
 	linalg::Matrix state_measurement_cov;
 
-	// Q and R
-	linalg::Matrix process_unc, measure_unc;
+	// Q
+	linalg::Matrix process_unc;
 
 	// y and S
 	linalg::Vector innovation;

@@ -76,10 +76,10 @@ void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensor
 void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
 {
 	// calculate innovation
-	// y = z - h(x)
+	// y = h(x)
 	predict(state, accel, y);
 	// y = z - y = z - h(x)
-	subtract(accel.vector(), y, y);
+	subtract(accel.vec(), y, y);
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::mag& mag, Vector& y)
@@ -88,23 +88,21 @@ void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sen
 	// y = h(x)
 	predict(state, mag, y);
 	// y = z - y = z - h(x)
-	subtract(mag.vector(), y, y);
+	subtract(mag.vec(), y, y);
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::operator()(
-	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac, Matrix& measure_unc)
+	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac)
 {
 	innovation(state, accel, y);
 	derivs(state, accel, jac);
-	getMeasurementUncertainty(accel, measure_unc);
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::operator()(
-	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac, Matrix& measure_unc)
+	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac)
 {
 	innovation(state, mag, y);
 	derivs(state, mag, jac);
-	getMeasurementUncertainty(mag, measure_unc);
 }
 
 void ConstantPositionAccelMagQuatMeasurementModel::derivs(Vector& state, sensors::accel& accel, Matrix& jac)
@@ -149,22 +147,4 @@ void ConstantPositionAccelMagQuatMeasurementModel::derivs(Vector& state, sensors
 	jac[0][3] = 2 * my * qw + 2 * mz * qx;
 	jac[1][3] = -2 * mx * qw + 2 * mz * qy;
 	jac[2][3] = 2 * mx * qx + 2 * my * qy + 4 * mz * qz;
-}
-
-void ConstantPositionAccelMagQuatMeasurementModel::getMeasurementUncertainty(
-	sensors::accel& accel, Matrix& measure_unc)
-{
-	// fill measurement uncertainty matrix
-	measure_unc[0][0] = accel.xunc;
-	measure_unc[1][1] = accel.yunc;
-	measure_unc[2][2] = accel.zunc;
-}
-
-void ConstantPositionAccelMagQuatMeasurementModel::getMeasurementUncertainty(
-	sensors::mag& mag, Matrix& measure_unc)
-{
-	// fill measurement uncertainty matrix
-	measure_unc[0][0] = mag.xunc;
-	measure_unc[1][1] = mag.yunc;
-	measure_unc[2][2] = mag.zunc;
 }

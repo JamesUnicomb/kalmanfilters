@@ -19,24 +19,9 @@ struct ConstantVelocityAccelGyroMagMotionModel
 
 struct ConstantVelocityAccelGyroMagMeasurementModel
 {
-	void operator()(
-		linalg::Vector& state,
-		sensors::accel& accel,
-		linalg::Vector& y,
-		linalg::Matrix& jac,
-		linalg::Matrix& measure_unc);
-	void operator()(
-		linalg::Vector& state,
-		sensors::gyro& gyro,
-		linalg::Vector& y,
-		linalg::Matrix& jac,
-		linalg::Matrix& measure_unc);
-	void operator()(
-		linalg::Vector& state,
-		sensors::mag& mag,
-		linalg::Vector& y,
-		linalg::Matrix& jac,
-		linalg::Matrix& measure_unc);
+	void operator()(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y, linalg::Matrix& jac);
+	void operator()(linalg::Vector& state, sensors::gyro& gyro, linalg::Vector& y, linalg::Matrix& jac);
+	void operator()(linalg::Vector& state, sensors::mag& mag, linalg::Vector& y, linalg::Matrix& jac);
 
 	void predict(linalg::Vector& state, sensors::accel& accel, linalg::Vector& h);
 	void predict(linalg::Vector& state, sensors::gyro& gyro, linalg::Vector& h);
@@ -47,9 +32,6 @@ struct ConstantVelocityAccelGyroMagMeasurementModel
 	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);
 	void derivs(linalg::Vector& state, sensors::gyro& gyro, linalg::Matrix& jac);
 	void derivs(linalg::Vector& state, sensors::mag& mag, linalg::Matrix& jac);
-	void getMeasurementUncertainty(sensors::accel& accel, linalg::Matrix& measure_unc);
-	void getMeasurementUncertainty(sensors::gyro& gyro, linalg::Matrix& measure_unc);
-	void getMeasurementUncertainty(sensors::mag& mag, linalg::Matrix& measure_unc);
 	void final(linalg::Vector& state, linalg::Matrix& state_unc) { }
 
 	const int statedim = 6;

@@ -23,14 +23,12 @@ struct ConstantPositionAccelMagQuatMeasurementModel
 		linalg::Vector& state,
 		sensors::accel& accel,
 		linalg::Vector& y,
-		linalg::Matrix& jac,
-		linalg::Matrix& measure_unc);
+		linalg::Matrix& jac);
 	void operator()(
 		linalg::Vector& state,
 		sensors::mag& mag,
 		linalg::Vector& y,
-		linalg::Matrix& jac,
-		linalg::Matrix& measure_unc);
+		linalg::Matrix& jac);
 
 	void predict(linalg::Vector& state, sensors::accel& accel, linalg::Vector& h);
 	void predict(linalg::Vector& state, sensors::mag& mag, linalg::Vector& h);
@@ -38,8 +36,6 @@ struct ConstantPositionAccelMagQuatMeasurementModel
 	void innovation(linalg::Vector& state, sensors::mag& mag, linalg::Vector& y);
 	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);
 	void derivs(linalg::Vector& state, sensors::mag& mag, linalg::Matrix& jac);
-	void getMeasurementUncertainty(sensors::accel& accel, linalg::Matrix& measure_unc);
-	void getMeasurementUncertainty(sensors::mag& mag, linalg::Matrix& measure_unc);
 	void final(linalg::Vector& state, linalg::Matrix& state_unc)
 	{
 		// normalize quaternion

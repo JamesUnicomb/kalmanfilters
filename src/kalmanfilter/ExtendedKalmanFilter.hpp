@@ -116,12 +116,12 @@ public:
 	template <typename Z>
 	void update(Z& z)
 	{
-		h(state, z, innovation, dhdx, measure_unc);
+		h(state, z, innovation, dhdx);
 
 		linalg::transpose(dhdx, dhdxT);
 		linalg::mult(dhdx, state_unc, tmpmn);
 		linalg::mult(tmpmn, dhdxT, innovation_unc);
-		innovation_unc += measure_unc;
+		innovation_unc += z.unc();
 
 		// calculate kalman gain
 		svd.dcmp(innovation_unc);

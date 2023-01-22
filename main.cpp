@@ -28,30 +28,18 @@ PYBIND11_MODULE(kalmanfilters, mod) {
     py::class_<sensors::accel>(sensors, "accel")
         .def(py::init<double, double, double>())
         .def(py::init<double, double, double, double, double, double>())
-        .def_readwrite("x", &sensors::accel::x)
-        .def_readwrite("y", &sensors::accel::y)
-        .def_readwrite("z", &sensors::accel::z)
-        .def_readwrite("xunc", &sensors::accel::xunc)
-        .def_readwrite("yunc", &sensors::accel::yunc)
-        .def_readwrite("zunc", &sensors::accel::zunc);
+        .def("vec", &sensors::accel::vec)
+        .def("unc", &sensors::accel::unc);
     py::class_<sensors::gyro>(sensors, "gyro")
         .def(py::init<double, double, double>())
         .def(py::init<double, double, double, double, double, double>())
-        .def_readwrite("x", &sensors::accel::x)
-        .def_readwrite("y", &sensors::accel::y)
-        .def_readwrite("z", &sensors::accel::z)
-        .def_readwrite("xunc", &sensors::accel::xunc)
-        .def_readwrite("yunc", &sensors::accel::yunc)
-        .def_readwrite("zunc", &sensors::accel::zunc);
+        .def("vec", &sensors::gyro::vec)
+        .def("unc", &sensors::gyro::unc);
     py::class_<sensors::mag>(sensors, "mag")
         .def(py::init<double, double, double>())
         .def(py::init<double, double, double, double, double, double>())
-        .def_readwrite("x", &sensors::accel::x)
-        .def_readwrite("y", &sensors::accel::y)
-        .def_readwrite("z", &sensors::accel::z)
-        .def_readwrite("xunc", &sensors::accel::xunc)
-        .def_readwrite("yunc", &sensors::accel::yunc)
-        .def_readwrite("zunc", &sensors::accel::zunc);
+        .def("vec", &sensors::mag::vec)
+        .def("unc", &sensors::mag::unc);
 
     py::module quaternion = mod.def_submodule("quaternion", "misc. quaternion utilities.");
     quaternion.def("q_to_euler", py::overload_cast<Vector&>(&quaternion::q_to_euler));

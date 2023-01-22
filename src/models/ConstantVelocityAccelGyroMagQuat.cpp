@@ -220,69 +220,30 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel::predict(Vector& state, se
 void ConstantVelocityAccelGyroMagQuatMeasurementModel::innovation(
 	Vector& state, sensors::accel& accel, Vector& y)
 {
-	double qx, qy, qz, qw;
-	qw = state[0];
-	qx = state[1];
-	qy = state[2];
-	qz = state[3];
-
 	// calculate innovation
-	// y = z - h(x)
-	y[0] = accel.x - (g * (-2 * qw * qy + 2 * qx * qz));
-	y[1] = accel.y - (g * (2 * qw * qx + 2 * qy * qz));
-	y[2] = accel.z - (g * (2 * qw * qw + 2 * qz * qz - 1));
+	// y = h(x)
+	predict(state, accel, y);
+	// y = z - y = z - h(x)
+	subtract(accel.vec(), y, y);
 }
 
 void ConstantVelocityAccelGyroMagQuatMeasurementModel::innovation(
 	Vector& state, sensors::gyro& gyro, Vector& y)
 {
 	// calculate innovation
-	// y = z - h(x)
-	y[0] = gyro.x - state[4];
-	y[1] = gyro.y - state[5];
-	y[2] = gyro.z - state[6];
+	// y = h(x)
+	predict(state, gyro, y);
+	// y = z - y = z - h(x)
+	subtract(gyro.vec(), y, y);
 }
 
 void ConstantVelocityAccelGyroMagQuatMeasurementModel::innovation(Vector& state, sensors::mag& mag, Vector& y)
 {
-	double qx, qy, qz, qw;
-	qw = state[0];
-	qx = state[1];
-	qy = state[2];
-	qz = state[3];
-
 	// calculate innovation
-	// y = z - h(x)
-	y[0] = mag.x - (mx * (2 * qw * qw + 2 * qx * qx - 1) + my * (2 * qw * qz + 2 * qx * qy) +
-					mz * (-2 * qw * qy + 2 * qx * qz));
-	y[1] = mag.y - (mx * (-2 * qw * qz + 2 * qx * qy) + my * (2 * qw * qw + 2 * qy * qy - 1) +
-					mz * (2 * qw * qx + 2 * qy * qz));
-	y[2] = mag.z - (mx * (2 * qw * qy + 2 * qx * qz) + my * (-2 * qw * qx + 2 * qy * qz) +
-					mz * (2 * qw * qw + 2 * qz * qz - 1));
-}
-
-void ConstantVelocityAccelGyroMagQuatMeasurementModel::operator()(
-	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac, Matrix& measure_unc)
-{
-	innovation(state, accel, y);
-	derivs(state, accel, jac);
-	getMeasurementUncertainty(accel, measure_unc);
-}
-
-void ConstantVelocityAccelGyroMagQuatMeasurementModel::operator()(
-	Vector& state, sensors::gyro& gyro, Vector& y, Matrix& jac, Matrix& measure_unc)
-{
-	innovation(state, gyro, y);
-	derivs(state, gyro, jac);
-	getMeasurementUncertainty(gyro, measure_unc);
-}
-
-void ConstantVelocityAccelGyroMagQuatMeasurementModel::operator()(
-	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac, Matrix& measure_unc)
-{
-	innovation(state, mag, y);
-	derivs(state, mag, jac);
-	getMeasurementUncertainty(mag, measure_unc);
+	// y = h(x)
+	predict(state, mag, y);
+	// y = z - y = z - h(x)
+	subtract(mag.vec(), y, y);
 }
 
 void ConstantVelocityAccelGyroMagQuatMeasurementModel::derivs(
@@ -392,47 +353,23 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel::derivs(Vector& state, sen
 	jac[2][6] = 0.0;
 }
 
-void ConstantVelocityAccelGyroMagQuatMeasurementModel::getMeasurementUncertainty(
-	sensors::accel& accel, Matrix& measure_unc)
+void ConstantVelocityAccelGyroMagQuatMeasurementModel::operator()(
+	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac)
 {
-	// fill measurement uncertainty matrix
-	measure_unc[0][0] = accel.xunc;
-	measure_unc[0][1] = 0.0;
-	measure_unc[0][2] = 0.0;
-	measure_unc[1][0] = 0.0;
-	measure_unc[1][1] = accel.yunc;
-	measure_unc[1][2] = 0.0;
-	measure_unc[2][0] = 0.0;
-	measure_unc[2][1] = 0.0;
-	measure_unc[2][2] = accel.zunc;
+	innovation(state, accel, y);
+	derivs(state, accel, jac);
 }
 
-void ConstantVelocityAccelGyroMagQuatMeasurementModel::getMeasurementUncertainty(
-	sensors::gyro& gyro, Matrix& measure_unc)
+void ConstantVelocityAccelGyroMagQuatMeasurementModel::operator()(
+	Vector& state, sensors::gyro& gyro, Vector& y, Matrix& jac)
 {
-	// fill measurement uncertainty matrix
-	measure_unc[0][0] = gyro.xunc;
-	measure_unc[0][1] = 0.0;
-	measure_unc[0][2] = 0.0;
-	measure_unc[1][0] = 0.0;
-	measure_unc[1][1] = gyro.yunc;
-	measure_unc[1][2] = 0.0;
-	measure_unc[2][0] = 0.0;
-	measure_unc[2][1] = 0.0;
-	measure_unc[2][2] = gyro.zunc;
+	innovation(state, gyro, y);
+	derivs(state, gyro, jac);
 }
 
-void ConstantVelocityAccelGyroMagQuatMeasurementModel::getMeasurementUncertainty(
-	sensors::mag& mag, Matrix& measure_unc)
+void ConstantVelocityAccelGyroMagQuatMeasurementModel::operator()(
+	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac)
 {
-	// fill measurement uncertainty matrix
-	measure_unc[0][0] = mag.xunc;
-	measure_unc[0][1] = 0.0;
-	measure_unc[0][2] = 0.0;
-	measure_unc[1][0] = 0.0;
-	measure_unc[1][1] = mag.yunc;
-	measure_unc[1][2] = 0.0;
-	measure_unc[2][0] = 0.0;
-	measure_unc[2][1] = 0.0;
-	measure_unc[2][2] = mag.zunc;
+	innovation(state, mag, y);
+	derivs(state, mag, jac);
 }

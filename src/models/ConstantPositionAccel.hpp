@@ -19,17 +19,11 @@ struct ConstantPositionAccelMotionModel
 
 struct ConstantPositionAccelMeasurementModel
 {
-	void operator()(
-		linalg::Vector& state,
-		sensors::accel& accel,
-		linalg::Vector& y,
-		linalg::Matrix& jac,
-		linalg::Matrix& measure_unc);
+	void operator()(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y, linalg::Matrix& jac);
 
 	void predict(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y);
 	void innovation(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y);
 	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);
-	void getMeasurementUncertainty(sensors::accel& accel, linalg::Matrix& measure_unc);
 	void final(linalg::Vector& state, linalg::Matrix& state_unc) { }
 
 	const int statedim = 2;
