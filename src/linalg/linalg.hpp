@@ -85,6 +85,7 @@ void setzero(Matrix& a);
 void transpose(Matrix& a, Matrix& b);
 void mult(double a, Vector& b, Vector& c);
 void mult(double a, Matrix& b, Matrix& c);
+void mult(double a, double* b, Vector& c, int n);
 void mult(Matrix& a, Vector& b, Vector& c);
 void mult(Matrix& a, Matrix& b, Matrix& c);
 void add(Vector& a, Vector& b, Vector& c);
@@ -121,12 +122,7 @@ struct SVD
 // statistial linear algebra routines
 void weightedsum(Vector& w, std::vector<Vector>& a, Vector& b);
 void weightedmult(
-	Vector& w,
-	std::vector<Vector>& a,
-	Vector& abar,
-	std::vector<Vector>& b,
-	Vector& bbar,
-	Matrix& c);
+	Vector& w, std::vector<Vector>& a, Vector& abar, std::vector<Vector>& b, Vector& bbar, Matrix& c);
 }; // namespace linalg
 
 #endif /* _LINALG_HPP_ */

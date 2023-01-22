@@ -60,6 +60,16 @@ void linalg::mult(double a, Matrix& b, Matrix& c)
 	}
 }
 
+void linalg::mult(double a, double* b, Vector& c, int n)
+{
+	// copy free array to vector
+	int i;
+	for(i = 0; i < n; i++)
+	{
+		c[i] = a * b[i];
+	}
+}
+
 void linalg::mult(Matrix& a, Vector& b, Vector& c)
 {
 	int i, j;
