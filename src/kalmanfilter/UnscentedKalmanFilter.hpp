@@ -173,6 +173,7 @@ public:
 		linalg::weightedmult(
 			wc, state_sigma_points, state, measurement_sigma_points, measurement, state_measurement_cov);
 
+		// calculate kalman gain
 		linalg::mult(state_measurement_cov, innovation_unc_inv, gain);
 
 		// update state
