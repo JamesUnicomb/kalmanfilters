@@ -17,7 +17,7 @@ state_unc = Matrix(
     ]
 )
 
-kf = cvekf(5.0, state, state_unc)
+kf = cvekf(2.0, state, state_unc)
 
 microsprev = 0.0
 
