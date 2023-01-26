@@ -14,6 +14,7 @@ ext_modules = [
             "src/linalg/svd.cpp",
             "src/sensors/sensors.cpp",
             "src/quaternion/quaternion.cpp",
+            "src/igrf/igrf.cpp",
             "src/models/ConstantPositionAccel.cpp",
             "src/models/ConstantPositionAccelMagQuat.cpp",
             "src/models/ConstantVelocityAccelGyroMag.cpp",

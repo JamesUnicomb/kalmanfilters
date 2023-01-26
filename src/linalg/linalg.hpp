@@ -82,6 +82,7 @@ public:
 
 void setzero(Vector& a);
 void setzero(Matrix& a);
+double norm(Vector& a);
 void transpose(Matrix& a, Matrix& b);
 void mult(double a, Vector& b, Vector& c);
 void mult(double a, Matrix& b, Matrix& c);

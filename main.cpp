@@ -6,6 +6,7 @@
 #include "linalg/linalg.hpp"
 #include "quaternion/quaternion.hpp"
 #include "sensors/sensors.hpp"
+#include "igrf/igrf.hpp"
 #include "kalmanfilter/ExtendedKalmanFilter.hpp"
 #include "kalmanfilter/UnscentedKalmanFilter.hpp"
 #include "models/ConstantPositionAccel.hpp"

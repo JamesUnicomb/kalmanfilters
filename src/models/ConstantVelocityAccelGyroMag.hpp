@@ -41,7 +41,7 @@ struct ConstantVelocityAccelGyroMagMeasurementModel
 	const double g = 9.81;
 
 	// static earth magnetic field vector in sydney
-	const double mx = 24.0475, my = 5.4344, mz = 51.4601;
+	const double mx = 24.0475, my = -5.4344, mz = 51.4601;
 };
 
 #endif
