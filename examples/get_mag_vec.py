@@ -10,7 +10,7 @@ kalman filters.
 lon = 151.200043  # degrees east
 lat = -33.896042  # degrees north
 h = 0  # kilometers above sea level
-date = datetime(2020, 1, 1)
+date = datetime(2023, 1, 27)
 
 Be, Bn, Bu = ppigrf.igrf(lon, lat, h, date)  # returns east, north, up
 
