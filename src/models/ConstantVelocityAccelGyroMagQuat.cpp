@@ -174,7 +174,7 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::operator()(
 ConstantVelocityAccelGyroMagQuatMeasurementModel::ConstantVelocityAccelGyroMagQuatMeasurementModel()
 {
 	IGRF igrf(2023.0);
-	igrf.get_field(151.0, -33.0, 0.0, mx, my, mz);
+	igrf.get_field(151.200043, -33.896042, 0.0, mx, my, mz);
 }
 
 void ConstantVelocityAccelGyroMagQuatMeasurementModel::predict(
