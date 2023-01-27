@@ -34,6 +34,8 @@ struct ConstantVelocityAccelGyroMagQuatMotionModel
 
 struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 {
+	ConstantVelocityAccelGyroMagQuatMeasurementModel();
+
 	void operator()(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y, linalg::Matrix& jac);
 	void operator()(linalg::Vector& state, sensors::gyro& gyro, linalg::Vector& y, linalg::Matrix& jac);
 	void operator()(linalg::Vector& state, sensors::mag& mag, linalg::Vector& y, linalg::Matrix& jac);
@@ -70,7 +72,7 @@ struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 	const double g = 9.81;
 
 	// static earth magnetic field vector in sydney
-	const double mx = 24.0475, my = 5.4344, mz = 51.4601;
+	double mx, my, mz;
 };
 
 #endif

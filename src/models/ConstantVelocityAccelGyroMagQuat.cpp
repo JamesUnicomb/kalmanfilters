@@ -1,5 +1,6 @@
 #include "ConstantVelocityAccelGyroMagQuat.hpp"
 #include "linalg/linalg.hpp"
+#include "igrf/igrf.hpp"
 
 using namespace std;
 using namespace linalg;
@@ -107,7 +108,6 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::getProcessUncertainty(
 	omz = state[6];
 
 	double qd, qd2, qd3;
-
 	qd = q * delta;
 	qd2 = q / 2.0 * delta * delta;
 	qd3 = q / 3.0 * delta * delta * delta;
@@ -169,6 +169,12 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::operator()(
 	derivs(delta, state, jac);
 	getProcessUncertainty(delta, state, process_unc);
 	predict(delta, state);
+}
+
+ConstantVelocityAccelGyroMagQuatMeasurementModel::ConstantVelocityAccelGyroMagQuatMeasurementModel()
+{
+	IGRF igrf(2023.0);
+	igrf.get_field(151.200043, -33.896042, 0.0, mx, my, mz);
 }
 
 void ConstantVelocityAccelGyroMagQuatMeasurementModel::predict(

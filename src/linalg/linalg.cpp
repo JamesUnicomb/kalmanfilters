@@ -27,6 +27,17 @@ void linalg::setzero(Matrix& a)
 	}
 }
 
+double linalg::norm(Vector& a)
+{
+	int i;
+	double s = 0.0;
+	for(i = 0; i < a.size(); i++)
+	{
+		s += a[i] * a[i];
+	}
+	return sqrt(s);
+}
+
 void linalg::transpose(Matrix& a, Matrix& b)
 {
 	int i, j;
