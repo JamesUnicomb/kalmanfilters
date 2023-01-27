@@ -38,168 +38,158 @@ mgp = []
 mgpunc = []
 
 
-def f():
-    microsprev = 0.0
-    with open("examples/data/data3.txt", "r") as f:
-        for r in f.readlines()[1:]:
-            sensor, data = r.rstrip().split(":")
-            micros, x, y, z = data.split(",")
+with open("examples/data/data1.txt", "r") as f:
+    for r in f.readlines()[1:]:
+        sensor, data = r.rstrip().split(":")
+        micros, x, y, z = data.split(",")
 
-            micros = int(micros)
-            x = float(x)
-            y = float(y)
-            z = float(z)
+        micros = int(micros)
+        x = float(x)
+        y = float(y)
+        z = float(z)
 
-            if sensor == "accl":
-                dt = (micros - microsprev) * 1e-6
-                microsprev = micros
+        if sensor == "accl":
+            dt = (micros - microsprev) * 1e-6
+            microsprev = micros
 
-                Z = accel(x, y, z, 0.5, 0.5, 0.5)
+            Z = accel(x, y, z, 0.5, 0.5, 0.5)
 
-                # run kf step
-                kf.predict(dt)
-                kf.update(Z)
+            # run kf step
+            kf.predict(dt)
+            kf.update(Z)
 
-                Y = kf.get_innovation().tovec()
+            Y = kf.get_innovation().tovec()
 
-                tacc.append(micros)
-                acc.append([x, y, z])
-                accp.append([x - Y[0], y - Y[1], z - Y[2]])
-                s = kf.get_innovation_unc().tovec()
-                accpunc.append(s)
+            tacc.append(micros)
+            acc.append([x, y, z])
+            accp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
+            accpunc.append(s)
 
-            elif sensor == "gyro":
-                # dt = (micros - microsprev) * 1e-6
-                # microsprev = micros
+        elif sensor == "gyro":
+            # dt = (micros - microsprev) * 1e-6
+            # microsprev = micros
 
-                Z = gyro(x, y, z, 0.5, 0.5, 0.5)
+            Z = gyro(x, y, z, 0.5, 0.5, 0.5)
 
-                # run kf step
-                # kf.predict(dt)
-                # kf.update(gyro)
+            # run kf step
+            # kf.predict(dt)
+            # kf.update(gyro)
 
-                tdv.append(micros)
-                dv.append([x, y, z])
-                dvp.append(kf.get_state().tovec()[4:])
-                # jac = kf.dhdx
-                # s = kf.innovation_unc
-                s = np.add(
-                    np.array(kf.get_state_unc().tovec())[4:, 4:], 0.5 * np.eye(3)
-                )
-                dvpunc.append(s)
+            tdv.append(micros)
+            dv.append([x, y, z])
+            dvp.append(kf.get_state().tovec()[4:])
+            # jac = kf.dhdx
+            # s = kf.innovation_unc
+            s = np.add(np.array(kf.get_state_unc().tovec())[4:, 4:], 0.5 * np.eye(3))
+            dvpunc.append(s)
 
-            elif sensor == "mag":
-                dt = (micros - microsprev) * 1e-6
-                microsprev = micros
+        elif sensor == "mag":
+            dt = (micros - microsprev) * 1e-6
+            microsprev = micros
 
-                Z = mag(x, y, z, 40.0, 40.0, 40.0)
+            Z = mag(x, y, z, 40.0, 40.0, 40.0)
 
-                # run kf step
-                kf.predict(dt)
-                kf.update(Z)
+            # run kf step
+            kf.predict(dt)
+            kf.update(Z)
 
-                Y = kf.get_innovation().tovec()
+            Y = kf.get_innovation().tovec()
 
-                tmg.append(micros)
-                mg.append([x, y, z])
-                mgp.append([x - Y[0], y - Y[1], z - Y[2]])
-                s = kf.get_innovation_unc().tovec()
-                mgpunc.append(s)
+            tmg.append(micros)
+            mg.append([x, y, z])
+            mgp.append([x - Y[0], y - Y[1], z - Y[2]])
+            s = kf.get_innovation_unc().tovec()
+            mgpunc.append(s)
 
-            # print("state:     \n", kf.get_state().tovec())
-            # print("state_unc: \n", kf.get_state_unc().tovec())
+        # print("state:     \n", kf.get_state().tovec())
+        # print("state_unc: \n", kf.get_state_unc().tovec())
 
+acc = np.array(acc)
+accp = np.array(accp)
+accpunc = np.array(accpunc)
 
-from timeit import timeit
+fig, ax = plt.subplots(3, 1, figsize=(8, 5))
 
-N = 100
-print(timeit(f, number=N) / N)
+for i in range(3):
+    ax[i].scatter(tacc, acc[:, i], label="measurement")
+    ax[i].plot(tacc, accp[:, i], label="estimate")
+    ax[i].fill_between(
+        tacc,
+        accp[:, i] - 2.0 * np.sqrt(accpunc[:, i, i]),
+        accp[:, i] + 2.0 * np.sqrt(accpunc[:, i, i]),
+        alpha=0.2,
+        color="C0",
+        label="unc. (+/-2s)",
+    )
+ax[0].set_ylim(-12.0, 12.0)
+ax[1].set_ylim(-12.0, 12.0)
+ax[2].set_ylim(-12.0, 12.0)
+ax[0].set_ylabel("x")
+ax[1].set_ylabel("y")
+ax[2].set_ylabel("z")
+ax[2].set_xlabel("time (micros)")
+ax[2].legend(loc="lower right")
 
-# acc = np.array(acc)
-# accp = np.array(accp)
-# accpunc = np.array(accpunc)
-
-# fig, ax = plt.subplots(3, 1, figsize=(8, 5))
-
-# for i in range(3):
-#     ax[i].scatter(tacc, acc[:, i], label="measurement")
-#     ax[i].plot(tacc, accp[:, i], label="estimate")
-#     ax[i].fill_between(
-#         tacc,
-#         accp[:, i] - 2.0 * np.sqrt(accpunc[:, i, i]),
-#         accp[:, i] + 2.0 * np.sqrt(accpunc[:, i, i]),
-#         alpha=0.2,
-#         color="C0",
-#         label="unc. (+/-2s)",
-#     )
-# ax[0].set_ylim(-12.0, 12.0)
-# ax[1].set_ylim(-12.0, 12.0)
-# ax[2].set_ylim(-12.0, 12.0)
-# ax[0].set_ylabel("x")
-# ax[1].set_ylabel("y")
-# ax[2].set_ylabel("z")
-# ax[2].set_xlabel("time (micros)")
-# ax[2].legend(loc="lower right")
-
-# plt.show()
+plt.show()
 
 
-# dv = np.array(dv)
-# dvp = np.array(dvp)
-# dvpunc = np.array(dvpunc)
+dv = np.array(dv)
+dvp = np.array(dvp)
+dvpunc = np.array(dvpunc)
 
-# fig, ax = plt.subplots(3, 1, figsize=(8, 5))
+fig, ax = plt.subplots(3, 1, figsize=(8, 5))
 
-# for i in range(3):
-#     ax[i].scatter(tdv, dv[:, i], label="measurement")
-#     ax[i].plot(tdv, dvp[:, i], label="estimate")
-#     ax[i].fill_between(
-#         tdv,
-#         dvp[:, i] - 2.0 * np.sqrt(dvpunc[:, i, i]),
-#         dvp[:, i] + 2.0 * np.sqrt(dvpunc[:, i, i]),
-#         alpha=0.2,
-#         color="C0",
-#         label="unc. (+/-2s)",
-#     )
+for i in range(3):
+    ax[i].scatter(tdv, dv[:, i], label="measurement")
+    ax[i].plot(tdv, dvp[:, i], label="estimate")
+    ax[i].fill_between(
+        tdv,
+        dvp[:, i] - 2.0 * np.sqrt(dvpunc[:, i, i]),
+        dvp[:, i] + 2.0 * np.sqrt(dvpunc[:, i, i]),
+        alpha=0.2,
+        color="C0",
+        label="unc. (+/-2s)",
+    )
 
-# ax[0].set_ylim(-7.0, 7.0)
-# ax[1].set_ylim(-7.0, 7.0)
-# ax[2].set_ylim(-7.0, 7.0)
-# ax[0].set_ylabel("p")
-# ax[1].set_ylabel("q")
-# ax[2].set_ylabel("r")
-# ax[2].set_xlabel("time (micros)")
-# ax[2].legend(loc="lower right")
+ax[0].set_ylim(-7.0, 7.0)
+ax[1].set_ylim(-7.0, 7.0)
+ax[2].set_ylim(-7.0, 7.0)
+ax[0].set_ylabel("p")
+ax[1].set_ylabel("q")
+ax[2].set_ylabel("r")
+ax[2].set_xlabel("time (micros)")
+ax[2].legend(loc="lower right")
 
-# plt.show()
+plt.show()
 
 
-# mg = np.array(mg)
-# mgp = np.array(mgp)
-# mgpunc = np.array(mgpunc)
+mg = np.array(mg)
+mgp = np.array(mgp)
+mgpunc = np.array(mgpunc)
 
-# fig, ax = plt.subplots(3, 1, figsize=(8, 5))
+fig, ax = plt.subplots(3, 1, figsize=(8, 5))
 
-# for i in range(3):
-#     ax[i].scatter(tmg, mg[:, i], label="measurement")
-#     ax[i].plot(tmg, mgp[:, i], label="estimate")
-#     ax[i].fill_between(
-#         tmg,
-#         mgp[:, i] - 2.0 * np.sqrt(mgpunc[:, i, i]),
-#         mgp[:, i] + 2.0 * np.sqrt(mgpunc[:, i, i]),
-#         alpha=0.2,
-#         color="C0",
-#         label="unc. (+/-2s)",
-#     )
-#     ax[i].set_ylim()
+for i in range(3):
+    ax[i].scatter(tmg, mg[:, i], label="measurement")
+    ax[i].plot(tmg, mgp[:, i], label="estimate")
+    ax[i].fill_between(
+        tmg,
+        mgp[:, i] - 2.0 * np.sqrt(mgpunc[:, i, i]),
+        mgp[:, i] + 2.0 * np.sqrt(mgpunc[:, i, i]),
+        alpha=0.2,
+        color="C0",
+        label="unc. (+/-2s)",
+    )
+    ax[i].set_ylim()
 
-# ax[0].set_ylim(-57.5, 57.5)
-# ax[1].set_ylim(-57.5, 57.5)
-# ax[2].set_ylim(-57.5, 57.5)
-# ax[0].set_ylabel("x")
-# ax[1].set_ylabel("y")
-# ax[2].set_ylabel("z")
-# ax[2].set_xlabel("time (micros)")
-# ax[2].legend(loc="lower right")
+ax[0].set_ylim(-57.5, 57.5)
+ax[1].set_ylim(-57.5, 57.5)
+ax[2].set_ylim(-57.5, 57.5)
+ax[0].set_ylabel("x")
+ax[1].set_ylabel("y")
+ax[2].set_ylabel("z")
+ax[2].set_xlabel("time (micros)")
+ax[2].legend(loc="lower right")
 
-# plt.show()
+plt.show()
