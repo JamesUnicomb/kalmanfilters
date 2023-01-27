@@ -14,7 +14,7 @@ void IGRF::get_field(double lon, double lat, double alt, double& mx, double& my,
 	double theta, r;
 
 	geod2geoc(lat, alt, theta, r);
-	double phi = lon * d2r;
+	double phi = lon * DEG_TO_RAD;
 	double rn = pow(RE / r, 2.0);
 
 	legendre(theta);
@@ -50,14 +50,14 @@ void IGRF::geod2geoc(double lat, double alt, double& theta, double& r)
 {
 	double a = WGS84_a;
 	double b = a * sqrt(1 - WGS84_e2);
-	double alpha = lat * d2r;
+	double alpha = lat * DEG_TO_RAD;
 
 	double sin_alpha_2 = SQR(sin(alpha));
 	double cos_alpha_2 = SQR(cos(alpha));
 
 	double tmp = alt * sqrt(a * a * cos_alpha_2 + b * b * sin_alpha_2);
 	double beta = atan((tmp + b * b) / (tmp + a * a) * tan(alpha));
-	theta = pi / 2.0 - beta;
+	theta = PI_OVER_TWO - beta;
 	r = sqrt(
 		alt * alt + 2.0 * tmp +
 		a * a * (1 - (1 - pow(b / a, 4.0)) * sin_alpha_2) / (1 - (1 - pow(b / a, 2.0)) * sin_alpha_2));
@@ -88,7 +88,7 @@ void IGRF::geoc2geod(double theta, double r, double& mx, double& mz)
 	double A83 = -252.0 * E8 / 2048.0;
 	double A84 = 320.0 * E8 / 2048.0;
 
-	double GCLAT = pi / 2 - theta;
+	double GCLAT = PI_OVER_TWO - theta;
 	double SCL = sin(GCLAT);
 
 	double RI = a / r;

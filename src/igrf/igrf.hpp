@@ -243,11 +243,13 @@ public:
 	void legendre(double theta);
 
 private:
-	double WGS84_e2 = 0.00669437999014;
-	double WGS84_a = 6378.137;
-	double d2r = 0.01745329251;
-	double RE = 6371.2;
-	const double pi = 3.14159265359;
+	const double WGS84_e2 = 0.00669437999014;
+	const double WGS84_a = 6378.137;
+	const double DEG_TO_RAD = 0.01745329251;
+	const double RE = 6371.2;
+	const double PI = 3.14159265358979323846264338327950288419716939937511;
+	const double TWO_PI = 6.28318530717958647692528676655900576839433879875022;
+	const double PI_OVER_TWO = 1.57079632679489661923132169163975144209858469968756;
 };
 
 #endif

@@ -164,6 +164,26 @@ ax[2].legend(loc="lower right")
 plt.show()
 
 
+fig, ax = plt.subplots(1, figsize=(8, 3))
+
+ax.plot(tdv, np.linalg.norm(dv - dvp, axis=1), label="error")
+ax.fill_between(
+    tdv,
+    np.zeros_like(tdv),
+    2.0 * np.sqrt(dvpunc[:, 0, 0] + dvpunc[:, 1, 1] + dvpunc[:, 2, 2]),
+    alpha=0.2,
+    color="C0",
+    label="unc. (+/-2s)",
+)
+
+ax.set_ylim(0.0, 15.0)
+ax.set_ylabel("error")
+ax.set_xlabel("time (micros)")
+ax.legend(loc="upper left")
+
+plt.show()
+
+
 mg = np.array(mg)
 mgp = np.array(mgp)
 mgpunc = np.array(mgpunc)
