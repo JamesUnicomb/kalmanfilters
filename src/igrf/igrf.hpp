@@ -4,6 +4,15 @@
 #include <math.h>
 #include "linalg/linalg.hpp"
 
+/* 
+ * The routines in this section were taken from:
+ * http://phys.uri.edu/nigh/NumRec/bookfpdf/f6-8.pdf
+ * 
+ * Depending on the use case there are several ways to 
+ * calculate the fields given by the spherical harmonic 
+ * constants. 
+ */
+
 struct IGRFConsts
 {
 	double g[15][15];
@@ -243,6 +252,11 @@ public:
 	void legendre(double theta);
 
 private:
+	/* 
+	 * The constants here can be found in some testbooks.
+	 * See Satellite Orbits: Models, Methods and Applications
+	 * Montenbruck and Gill (2000)
+	 */
 	const double WGS84_e2 = 0.00669437999014;
 	const double WGS84_a = 6378.137;
 	const double DEG_TO_RAD = 0.01745329251;
