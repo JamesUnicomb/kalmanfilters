@@ -1,5 +1,6 @@
 pyserial
 pandas
 numpy
+sympy
 matplotlib
 ppigrf
