@@ -32,7 +32,12 @@ public:
     sigma = sigma - K * S * K^T
     */
 
-	UnscentedKalmanFilter(double q, linalg::Vector state, linalg::Matrix state_unc)
+	// motion and measurement models
+	F f;
+	H h;
+
+	template <typename... Fargs>
+	UnscentedKalmanFilter(linalg::Vector state, linalg::Matrix state_unc, Fargs... fargs)
 		: state(state)
 		, state_unc(state_unc)
 		, statedim(h.statedim)
@@ -58,7 +63,7 @@ public:
 
 		// set the measurement
 		// noise for the motion model
-		f.q = q;
+		f.setParameters(fargs...);
 
 		state_unc_sqrtm = linalg::Matrix(statedim, statedim, 0.0);
 		state_sigma_points = std::vector<linalg::Vector>(sigmadim, linalg::Vector(statedim, 0.0));
@@ -92,6 +97,18 @@ public:
 		tmpmn = linalg::Matrix(measuredim, statedim, 0.0);
 		tmpmm = linalg::Matrix(measuredim, measuredim, 0.0);
 		tmpunc = linalg::Matrix(statedim, statedim, 0.0);
+	}
+
+	template <typename... Fargs>
+	void setMotionParameters(Fargs... args)
+	{
+		f.setParameters(args...);
+	}
+
+	template <typename... Hargs>
+	void setMeasurementParameters(Hargs... args)
+	{
+		h.setParameters(args...);
 	}
 
 	void set_state(linalg::Vector& state_)
@@ -192,9 +209,6 @@ public:
 	}
 
 private:
-	F f;
-	H h;
-
 	int statedim;
 	int measuredim;
 	int sigmadim;

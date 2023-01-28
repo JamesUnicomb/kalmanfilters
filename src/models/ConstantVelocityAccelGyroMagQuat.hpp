@@ -12,6 +12,10 @@ struct ConstantVelocityAccelGyroMagQuatMotionModel
 	void predict(double delta, linalg::Vector& state);
 	void derivs(double delta, linalg::Vector& state, linalg::Matrix& jac);
 	void getProcessUncertainty(double delta, linalg::Vector& state, linalg::Matrix& process_unc);
+	void setParameters(double q)
+	{
+		q_ = q;
+	}
 	void final(linalg::Vector& state, linalg::Matrix& state_unc)
 	{
 		// normalize quaternion
@@ -29,13 +33,12 @@ struct ConstantVelocityAccelGyroMagQuatMotionModel
 	}
 
 	const int statedim = 7;
-	double q;
+	double q_;
 };
 
+template <typename M>
 struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 {
-	ConstantVelocityAccelGyroMagQuatMeasurementModel();
-
 	void operator()(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y, linalg::Matrix& jac);
 	void operator()(linalg::Vector& state, sensors::gyro& gyro, linalg::Vector& y, linalg::Matrix& jac);
 	void operator()(linalg::Vector& state, sensors::mag& mag, linalg::Vector& y, linalg::Matrix& jac);
@@ -49,6 +52,12 @@ struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);
 	void derivs(linalg::Vector& state, sensors::gyro& gyro, linalg::Matrix& jac);
 	void derivs(linalg::Vector& state, sensors::mag& mag, linalg::Matrix& jac);
+	void setParameters(double lon, double lat, double alt)
+	{
+		m.setParameters(lon, lat, alt);
+		// get magnetic field vector values
+		m(mx, my, mz);
+	}
 	void final(linalg::Vector& state, linalg::Matrix& state_unc)
 	{
 		// normalize quaternion
@@ -68,11 +77,16 @@ struct ConstantVelocityAccelGyroMagQuatMeasurementModel
 	const int statedim = 7;
 	const int measuredim = 3;
 
+	// magnetic field model
+	M m;
+
+	// earth magnetic field vector
+	double mx, my, mz;
+
 	// earth gravity
 	const double g = 9.81;
-
-	// static earth magnetic field vector in sydney
-	double mx, my, mz;
 };
+
+#include "ConstantVelocityAccelGyroMagQuat.cpp"
 
 #endif

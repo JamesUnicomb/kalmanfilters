@@ -25,7 +25,7 @@ void ConstantPositionAccelMagQuatMotionModel::getProcessUncertainty(
 	// sigma = df/dx * sigma * df/dx^T + Q ~ sigma + Q
 	for(int i = 0; i < 4; i++)
 	{
-		process_unc[i][i] = delta * q;
+		process_unc[i][i] = delta * q_;
 	}
 }
 
@@ -37,7 +37,8 @@ void ConstantPositionAccelMagQuatMotionModel::operator()(
 	predict(delta, state);
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensors::accel& accel, Vector& y)
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::predict(Vector& state, sensors::accel& accel, Vector& y)
 {
 	double qx, qy, qz, qw;
 	qw = state[0];
@@ -52,7 +53,8 @@ void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensor
 	y[2] = (g * (2 * qw * qw + 2 * qz * qz - 1));
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensors::mag& mag, Vector& y)
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::predict(Vector& state, sensors::mag& mag, Vector& y)
 {
 	double qx, qy, qz, qw;
 	qw = state[0];
@@ -73,7 +75,9 @@ void ConstantPositionAccelMagQuatMeasurementModel::predict(Vector& state, sensor
 		 mz * (2 * qw * qw + 2 * qz * qz - 1));
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::accel& accel, Vector& y)
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::innovation(
+	Vector& state, sensors::accel& accel, Vector& y)
 {
 	// calculate innovation
 	// y = h(x)
@@ -82,7 +86,8 @@ void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sen
 	subtract(accel.vec(), y, y);
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sensors::mag& mag, Vector& y)
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::innovation(Vector& state, sensors::mag& mag, Vector& y)
 {
 	// calculate innovation
 	// y = h(x)
@@ -91,21 +96,25 @@ void ConstantPositionAccelMagQuatMeasurementModel::innovation(Vector& state, sen
 	subtract(mag.vec(), y, y);
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::operator()(
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::operator()(
 	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac)
 {
 	innovation(state, accel, y);
 	derivs(state, accel, jac);
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::operator()(
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::operator()(
 	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac)
 {
 	innovation(state, mag, y);
 	derivs(state, mag, jac);
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::derivs(Vector& state, sensors::accel& accel, Matrix& jac)
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::derivs(
+	Vector& state, sensors::accel& accel, Matrix& jac)
 {
 	double qw, qx, qy, qz;
 	qw = state[0];
@@ -127,7 +136,8 @@ void ConstantPositionAccelMagQuatMeasurementModel::derivs(Vector& state, sensors
 	jac[2][3] = 4 * g * qz;
 }
 
-void ConstantPositionAccelMagQuatMeasurementModel::derivs(Vector& state, sensors::mag& mag, Matrix& jac)
+template <typename M>
+void ConstantPositionAccelMagQuatMeasurementModel<M>::derivs(Vector& state, sensors::mag& mag, Matrix& jac)
 {
 	double qw, qx, qy, qz;
 	qw = state[0];

@@ -68,3 +68,9 @@ sensors::mag::mag(double x, double y, double z)
 sensors::mag::mag(double x, double y, double z, double xunc, double yunc, double zunc)
 	: base(x, y, z, xunc, yunc, zunc)
 { }
+
+sensors::gps::gps(double lon, double lat, double alt)
+	: lon(lon)
+	, lat(lat)
+	, alt(alt)
+{ }

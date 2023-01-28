@@ -9,9 +9,7 @@
 #include "igrf/igrf.hpp"
 #include "kalmanfilter/ExtendedKalmanFilter.hpp"
 #include "kalmanfilter/UnscentedKalmanFilter.hpp"
-#include "models/ConstantPositionAccel.hpp"
 #include "models/ConstantPositionAccelMagQuat.hpp"
-#include "models/ConstantVelocityAccelGyroMag.hpp"
 #include "models/ConstantVelocityAccelGyroMagQuat.hpp"
 
 // clang-format off
@@ -54,21 +52,45 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def(py::init<vector<vector<double>>&>())
         .def("tovec", &Matrix::tovec);
 
-    typedef ExtendedKalmanFilter<ConstantPositionAccelMotionModel, ConstantPositionAccelMeasurementModel> cpekf;
-    py::class_<cpekf>(mod, "cpekf")
-        .def(py::init<double, Vector, Matrix>())
-        .def("set_state", &cpekf::set_state)
-        .def("set_state_unc", &cpekf::set_state_unc)
-        .def("get_state", &cpekf::get_state)
-        .def("get_state_unc", &cpekf::get_state_unc)
-        .def("get_innovation", &cpekf::get_innovation)
-        .def("get_innovation_unc", &cpekf::get_innovation_unc)
-        .def("predict", &cpekf::predict)
-        .def("update", &cpekf::update<sensors::accel&>);
+    // typedef ExtendedKalmanFilter<ConstantPositionAccelMotionModel, ConstantPositionAccelMeasurementModel> cpekf;
+    // py::class_<cpekf>(mod, "cpekf")
+    //     .def(py::init<double, Vector, Matrix>())
+    //     .def("set_state", &cpekf::set_state)
+    //     .def("set_state_unc", &cpekf::set_state_unc)
+    //     .def("get_state", &cpekf::get_state)
+    //     .def("get_state_unc", &cpekf::get_state_unc)
+    //     .def("get_innovation", &cpekf::get_innovation)
+    //     .def("get_innovation_unc", &cpekf::get_innovation_unc)
+    //     .def("predict", &cpekf::predict)
+    //     .def("update", &cpekf::update<sensors::accel&>);
 
-    typedef ExtendedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel> cpqekf;
+    class GeomagModel {
+    public:
+        GeomagModel() : igrf(2023.0) {
+            igrf.get_field(lon_, lat_, alt_, mx_, my_, mz_);
+        }
+        void operator()(double &mx, double &my, double &mz) {
+            mx = mx_;
+            my = my_;
+            mz = mz_;
+        }
+        void setParameters(double lon, double lat, double alt) {
+            lon_ = lon;
+            lat_ = lat;
+            alt_ = alt;
+            igrf.get_field(lon_, lat_, alt_, mx_, my_, mz_);
+        }
+    private:
+        IGRF igrf;
+        double lon_, lat_, alt_;
+        double mx_, my_, mz_;
+    };
+
+    typedef ExtendedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel<GeomagModel>> cpqekf;
     py::class_<cpqekf>(mod, "cpqekf")
-        .def(py::init<double, Vector, Matrix>())
+        .def(py::init<Vector, Matrix, double>())
+        .def("setMotionParameters", &cpqekf::setMotionParameters<double>)
+        .def("setMeasurementParameters", &cpqekf::setMeasurementParameters<double, double, double>)
         .def("set_state", &cpqekf::set_state)
         .def("set_state_unc", &cpqekf::set_state_unc)
         .def("get_state", &cpqekf::get_state)
@@ -79,9 +101,11 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cpqekf::update<sensors::accel&>)
         .def("update", &cpqekf::update<sensors::mag&>);
 
-    typedef UnscentedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel> cpqukf;
+    typedef UnscentedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel<GeomagModel>> cpqukf;
     py::class_<cpqukf>(mod, "cpqukf")
-        .def(py::init<double, Vector, Matrix>())
+        .def(py::init<Vector, Matrix, double>())
+        .def("setMotionParameters", &cpqukf::setMotionParameters<double>)
+        .def("setMeasurementParameters", &cpqukf::setMeasurementParameters<double, double, double>)
         .def("set_state", &cpqukf::set_state)
         .def("set_state_unc", &cpqukf::set_state_unc)
         .def("get_state", &cpqukf::get_state)
@@ -92,37 +116,25 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cpqukf::update<sensors::accel&>)
         .def("update", &cpqukf::update<sensors::mag&>);
 
-    typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
-    py::class_<cvekf>(mod, "cvekf")
-        .def(py::init<double, Vector, Matrix>())
-        .def("set_state", &cvekf::set_state)
-        .def("set_state_unc", &cvekf::set_state_unc)
-        .def("get_state", &cvekf::get_state)
-        .def("get_state_unc", &cvekf::get_state_unc)
-        .def("get_innovation", &cvekf::get_innovation)
-        .def("get_innovation_unc", &cvekf::get_innovation_unc)
-        .def("predict", &cvekf::predict)
-        .def("update", &cvekf::update<sensors::accel&>)
-        .def("update", &cvekf::update<sensors::gyro&>)
-        .def("update", &cvekf::update<sensors::mag&>);
+    // typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
+    // py::class_<cvekf>(mod, "cvekf")
+    //     .def(py::init<double, Vector, Matrix>())
+    //     .def("set_state", &cvekf::set_state)
+    //     .def("set_state_unc", &cvekf::set_state_unc)
+    //     .def("get_state", &cvekf::get_state)
+    //     .def("get_state_unc", &cvekf::get_state_unc)
+    //     .def("get_innovation", &cvekf::get_innovation)
+    //     .def("get_innovation_unc", &cvekf::get_innovation_unc)
+    //     .def("predict", &cvekf::predict)
+    //     .def("update", &cvekf::update<sensors::accel&>)
+    //     .def("update", &cvekf::update<sensors::gyro&>)
+    //     .def("update", &cvekf::update<sensors::mag&>);
 
-    typedef UnscentedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel> cvqukf;
-    py::class_<cvqukf>(mod, "cvqukf")
-        .def(py::init<double, Vector, Matrix>())
-        .def("set_state", &cvqukf::set_state)
-        .def("set_state_unc", &cvqukf::set_state_unc)
-        .def("get_state", &cvqukf::get_state)
-        .def("get_state_unc", &cvqukf::get_state_unc)
-        .def("get_innovation", &cvqukf::get_innovation)
-        .def("get_innovation_unc", &cvqukf::get_innovation_unc)
-        .def("predict", &cvqukf::predict)
-        .def("update", &cvqukf::update<sensors::accel&>)
-        .def("update", &cvqukf::update<sensors::gyro&>)
-        .def("update", &cvqukf::update<sensors::mag&>);
-
-    typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel> cvqekf;
+    typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel<GeomagModel>> cvqekf;
     py::class_<cvqekf>(mod, "cvqekf")
-        .def(py::init<double, Vector, Matrix>())
+        .def(py::init<Vector, Matrix, double>())
+        .def("setMotionParameters", &cvqekf::setMotionParameters<double>)
+        .def("setMeasurementParameters", &cvqekf::setMeasurementParameters<double, double, double>)
         .def("set_state", &cvqekf::set_state)
         .def("set_state_unc", &cvqekf::set_state_unc)
         .def("get_state", &cvqekf::get_state)
@@ -134,6 +146,21 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cvqekf::update<sensors::gyro&>)
         .def("update", &cvqekf::update<sensors::mag&>);
 
+    typedef UnscentedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel<GeomagModel>> cvqukf;
+    py::class_<cvqukf>(mod, "cvqukf")
+        .def(py::init<Vector, Matrix, double>())
+        .def("setMotionParameters", &cvqukf::setMotionParameters<double>)
+        .def("setMeasurementParameters", &cvqukf::setMeasurementParameters<double, double, double>)
+        .def("set_state", &cvqukf::set_state)
+        .def("set_state_unc", &cvqukf::set_state_unc)
+        .def("get_state", &cvqukf::get_state)
+        .def("get_state_unc", &cvqukf::get_state_unc)
+        .def("get_innovation", &cvqukf::get_innovation)
+        .def("get_innovation_unc", &cvqukf::get_innovation_unc)
+        .def("predict", &cvqukf::predict)
+        .def("update", &cvqukf::update<sensors::accel&>)
+        .def("update", &cvqukf::update<sensors::gyro&>)
+        .def("update", &cvqukf::update<sensors::mag&>);
 
 #ifdef VERSION_INFO
     mod.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);

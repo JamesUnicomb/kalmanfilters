@@ -23,7 +23,12 @@ public:
     sigma = (I - K * dh/dx) * sigma
     */
 
-	ExtendedKalmanFilter(double q, linalg::Vector state, linalg::Matrix state_unc)
+	// motion and measurement models
+	F f;
+	H h;
+
+	template <typename... Fargs>
+	ExtendedKalmanFilter(linalg::Vector state, linalg::Matrix state_unc, Fargs... fargs)
 		: state(state)
 		, state_unc(state_unc)
 		, statedim(h.statedim)
@@ -33,7 +38,7 @@ public:
 		int i;
 
 		// set motion uncertainty
-		f.q = q;
+		f.setParameters(fargs...);
 
 		// process and measurement uncertainty matrices
 		process_unc = linalg::Matrix(statedim, statedim, 0.0);
@@ -67,6 +72,18 @@ public:
 		tmpmn = linalg::Matrix(measuredim, statedim, 0.0);
 		tmpmm = linalg::Matrix(measuredim, measuredim, 0.0);
 		tmpunc = linalg::Matrix(statedim, statedim, 0.0);
+	}
+
+	template <typename... Fargs>
+	void setMotionParameters(Fargs... args)
+	{
+		f.setParameters(args...);
+	}
+
+	template <typename... Hargs>
+	void setMeasurementParameters(Hargs... args)
+	{
+		h.setParameters(args...);
 	}
 
 	void set_state(linalg::Vector& state_)
@@ -144,9 +161,6 @@ public:
 	}
 
 private:
-	F f;
-	H h;
-
 	// x and sigma
 	linalg::Vector state;
 	linalg::Matrix state_unc;
