@@ -116,20 +116,6 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cpqukf::update<sensors::accel&>)
         .def("update", &cpqukf::update<sensors::mag&>);
 
-    // typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagMotionModel, ConstantVelocityAccelGyroMagMeasurementModel> cvekf;
-    // py::class_<cvekf>(mod, "cvekf")
-    //     .def(py::init<double, Vector, Matrix>())
-    //     .def("set_state", &cvekf::set_state)
-    //     .def("set_state_unc", &cvekf::set_state_unc)
-    //     .def("get_state", &cvekf::get_state)
-    //     .def("get_state_unc", &cvekf::get_state_unc)
-    //     .def("get_innovation", &cvekf::get_innovation)
-    //     .def("get_innovation_unc", &cvekf::get_innovation_unc)
-    //     .def("predict", &cvekf::predict)
-    //     .def("update", &cvekf::update<sensors::accel&>)
-    //     .def("update", &cvekf::update<sensors::gyro&>)
-    //     .def("update", &cvekf::update<sensors::mag&>);
-
     typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel<GeomagModel>> cvqekf;
     py::class_<cvqekf>(mod, "cvqekf")
         .def(py::init<Vector, Matrix, double>())
