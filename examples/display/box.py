@@ -120,7 +120,8 @@ def main():
         ]
     )
 
-    kf = cvqekf(5.0, state, state_unc)
+    kf = cvqekf(state, state_unc, 2.0)
+    kf.setMeasurementParameters(151.200043, -33.896042, 0.0)
 
     microsprev = 0.0
 
