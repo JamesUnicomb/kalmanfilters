@@ -119,6 +119,11 @@ void IGRF::geoc2geod(double theta, double r, double& mx, double& mz)
 
 void IGRF::legendre(double theta)
 {
+	/* common derivations of the recursion relations for 
+     * generating the associated legendre polynomials. 
+	 * for a great introduction see:
+	 * http://phys.uri.edu/nigh/NumRec/bookfpdf/f6-8.pdf
+	 */
 	int m, n;
 
 	double costh = cos(theta);

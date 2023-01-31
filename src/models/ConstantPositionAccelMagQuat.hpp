@@ -11,24 +11,21 @@ struct ConstantPositionAccelMagQuatMotionModel
 	void predict(double delta, linalg::Vector& state);
 	void derivs(double delta, linalg::Vector& state, linalg::Matrix& jac);
 	void getProcessUncertainty(double delta, linalg::Vector& state, linalg::Matrix& process_unc);
+	void setParameters(double q)
+	{
+		q_ = q;
+	}
 	void final(linalg::Vector& state, linalg::Matrix& state_unc) { }
 
-	const int statedim = 2;
-	double q;
+	const int statedim = 4;
+	double q_;
 };
 
+template <typename M>
 struct ConstantPositionAccelMagQuatMeasurementModel
 {
-	void operator()(
-		linalg::Vector& state,
-		sensors::accel& accel,
-		linalg::Vector& y,
-		linalg::Matrix& jac);
-	void operator()(
-		linalg::Vector& state,
-		sensors::mag& mag,
-		linalg::Vector& y,
-		linalg::Matrix& jac);
+	void operator()(linalg::Vector& state, sensors::accel& accel, linalg::Vector& y, linalg::Matrix& jac);
+	void operator()(linalg::Vector& state, sensors::mag& mag, linalg::Vector& y, linalg::Matrix& jac);
 
 	void predict(linalg::Vector& state, sensors::accel& accel, linalg::Vector& h);
 	void predict(linalg::Vector& state, sensors::mag& mag, linalg::Vector& h);
@@ -36,6 +33,12 @@ struct ConstantPositionAccelMagQuatMeasurementModel
 	void innovation(linalg::Vector& state, sensors::mag& mag, linalg::Vector& y);
 	void derivs(linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac);
 	void derivs(linalg::Vector& state, sensors::mag& mag, linalg::Matrix& jac);
+	void setParameters(double lon, double lat, double alt)
+	{
+		m.setParameters(lon, lat, alt);
+		// get magnetic field vector values
+		m(mx, my, mz);
+	}
 	void final(linalg::Vector& state, linalg::Matrix& state_unc)
 	{
 		// normalize quaternion
@@ -55,11 +58,16 @@ struct ConstantPositionAccelMagQuatMeasurementModel
 	const int statedim = 4;
 	const int measuredim = 3;
 
+	// magnetic field model
+	M m;
+
+	// earth magnetic field vector
+	double mx, my, mz;
+
 	// earth gravity
 	const double g = 9.81;
-
-	// static earth magnetic field vector in sydney
-	const double mx = 24.0475, my = 5.4344, mz = 51.4601;
 };
+
+#include "ConstantPositionAccelMagQuat.cpp"
 
 #endif

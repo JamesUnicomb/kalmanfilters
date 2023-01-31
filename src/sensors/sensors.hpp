@@ -8,14 +8,16 @@ namespace sensors
 class base
 {
 public:
-	const double x, y, z;
-	const double xunc, yunc, zunc;
-	linalg::Vector v;
-	linalg::Matrix S;
 	base(double x, double y, double z);
 	base(double x, double y, double z, double xunc, double yunc, double zunc);
 	linalg::Vector& vec();
 	linalg::Matrix& unc();
+
+private:
+	const double x, y, z;
+	const double xunc, yunc, zunc;
+	linalg::Vector v;
+	linalg::Matrix S;
 };
 
 class accel : public base
@@ -37,6 +39,13 @@ class mag : public base
 public:
 	mag(double x, double y, double z);
 	mag(double x, double y, double z, double xunc, double yunc, double zunc);
+};
+
+class gps
+{
+public:
+	gps(double lon, double lat, double alt);
+	double lon, lat, alt;
 };
 }; // namespace sensors
 

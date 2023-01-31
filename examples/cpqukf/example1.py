@@ -15,7 +15,9 @@ state_unc = Matrix(
     ]
 )
 
-kf = cpqukf(0.1, state, state_unc)
+lon, lat, alt = (151.200043, -33.896042, 0.0)
+kf = cpqukf(state, state_unc, 0.1)
+kf.setMeasurementParameters(lon, lat, alt)
 
 microsprev = 0.0
 
