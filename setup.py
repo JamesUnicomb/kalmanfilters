@@ -8,16 +8,12 @@ ext_modules = [
         "kalmanfilters",
         [
             "src/linalg/linalg.cpp",
-            "src/linalg/vector.cpp",
-            "src/linalg/matrix.cpp",
-            "src/linalg/cholesky.cpp",
-            "src/linalg/svd.cpp",
             "src/sensors/sensors.cpp",
             "src/quaternion/quaternion.cpp",
             "src/igrf/igrf.cpp",
             "main.cpp",
         ],
-        include_dirs=["extern", "src"],
+        include_dirs=["src"],
         define_macros=[("VERSION_INFO", __version__)],
     ),
 ]

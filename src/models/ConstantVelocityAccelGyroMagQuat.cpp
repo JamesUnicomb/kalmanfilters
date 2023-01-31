@@ -2,9 +2,6 @@
 #include "linalg/linalg.hpp"
 #include "igrf/igrf.hpp"
 
-using namespace std;
-using namespace linalg;
-
 void ConstantVelocityAccelGyroMagQuatMotionModel::predict(double delta, linalg::Vector& state)
 {
 	double qx, qy, qz, qw, omx, omy, omz;
@@ -23,7 +20,8 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::predict(double delta, linalg::
 	state[3] = qz + delta * 0.5 * (omz * qw + omy * qx - omx * qy);
 }
 
-void ConstantVelocityAccelGyroMagQuatMotionModel::derivs(double delta, Vector& state, Matrix& jac)
+void ConstantVelocityAccelGyroMagQuatMotionModel::derivs(
+	double delta, linalg::Vector& state, linalg::Matrix& jac)
 {
 	int i;
 	double qx, qy, qz, qw, omx, omy, omz;
@@ -93,7 +91,7 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::derivs(double delta, Vector& s
 }
 
 void ConstantVelocityAccelGyroMagQuatMotionModel::getProcessUncertainty(
-	double delta, Vector& state, Matrix& process_unc)
+	double delta, linalg::Vector& state, linalg::Matrix& process_unc)
 {
 	// see https://www.robots.ox.ac.uk/~ian/Teaching/Estimation/LectureNotes2.pdf
 	// pages 12-13 for a derivation of the process noise
@@ -164,7 +162,7 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::getProcessUncertainty(
 }
 
 void ConstantVelocityAccelGyroMagQuatMotionModel::operator()(
-	double delta, Vector& state, Matrix& jac, Matrix& process_unc)
+	double delta, linalg::Vector& state, linalg::Matrix& jac, linalg::Matrix& process_unc)
 {
 	derivs(delta, state, jac);
 	getProcessUncertainty(delta, state, process_unc);
@@ -173,7 +171,7 @@ void ConstantVelocityAccelGyroMagQuatMotionModel::operator()(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::predict(
-	Vector& state, sensors::accel& accel, Vector& y)
+	linalg::Vector& state, sensors::accel& accel, linalg::Vector& y)
 {
 	double qx, qy, qz, qw;
 	qw = state[0];
@@ -190,7 +188,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::predict(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::predict(
-	Vector& state, sensors::gyro& gyro, Vector& y)
+	linalg::Vector& state, sensors::gyro& gyro, linalg::Vector& y)
 {
 	// calculate innovation
 	// y = z - h(x)
@@ -200,7 +198,8 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::predict(
 }
 
 template <typename M>
-void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::predict(Vector& state, sensors::mag& mag, Vector& y)
+void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::predict(
+	linalg::Vector& state, sensors::mag& mag, linalg::Vector& y)
 {
 	double qx, qy, qz, qw;
 	qw = state[0];
@@ -223,7 +222,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::predict(Vector& state,
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::innovation(
-	Vector& state, sensors::accel& accel, Vector& y)
+	linalg::Vector& state, sensors::accel& accel, linalg::Vector& y)
 {
 	// calculate innovation
 	// y = h(x)
@@ -234,7 +233,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::innovation(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::innovation(
-	Vector& state, sensors::gyro& gyro, Vector& y)
+	linalg::Vector& state, sensors::gyro& gyro, linalg::Vector& y)
 {
 	// calculate innovation
 	// y = h(x)
@@ -245,7 +244,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::innovation(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::innovation(
-	Vector& state, sensors::mag& mag, Vector& y)
+	linalg::Vector& state, sensors::mag& mag, linalg::Vector& y)
 {
 	// calculate innovation
 	// y = h(x)
@@ -256,7 +255,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::innovation(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::derivs(
-	Vector& state, sensors::accel& accel, Matrix& jac)
+	linalg::Vector& state, sensors::accel& accel, linalg::Matrix& jac)
 {
 	double qw, qx, qy, qz;
 	qw = state[0];
@@ -295,7 +294,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::derivs(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::derivs(
-	Vector& state, sensors::gyro& gyro, Matrix& jac)
+	linalg::Vector& state, sensors::gyro& gyro, linalg::Matrix& jac)
 {
 	// H = dh/dx
 	jac[0][0] = 0.0;
@@ -329,7 +328,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::derivs(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::derivs(
-	Vector& state, sensors::mag& mag, Matrix& jac)
+	linalg::Vector& state, sensors::mag& mag, linalg::Matrix& jac)
 {
 	double qw, qx, qy, qz;
 	qw = state[0];
@@ -368,7 +367,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::derivs(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::operator()(
-	Vector& state, sensors::accel& accel, Vector& y, Matrix& jac)
+	linalg::Vector& state, sensors::accel& accel, linalg::Vector& y, linalg::Matrix& jac)
 {
 	innovation(state, accel, y);
 	derivs(state, accel, jac);
@@ -376,7 +375,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::operator()(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::operator()(
-	Vector& state, sensors::gyro& gyro, Vector& y, Matrix& jac)
+	linalg::Vector& state, sensors::gyro& gyro, linalg::Vector& y, linalg::Matrix& jac)
 {
 	innovation(state, gyro, y);
 	derivs(state, gyro, jac);
@@ -384,7 +383,7 @@ void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::operator()(
 
 template <typename M>
 void ConstantVelocityAccelGyroMagQuatMeasurementModel<M>::operator()(
-	Vector& state, sensors::mag& mag, Vector& y, Matrix& jac)
+	linalg::Vector& state, sensors::mag& mag, linalg::Vector& y, linalg::Matrix& jac)
 {
 	innovation(state, mag, y);
 	derivs(state, mag, jac);
