@@ -30,6 +30,10 @@ python examples/run_kf.py
 
 [![Extended Kalman Filter](https://img.youtube.com/vi/3IVuh-_xESg/0.jpg)](https://www.youtube.com/watch?v=3IVuh-_xESg)
 
+## Fully Embedded Application
+
+[![Extended Kalman Filter](https://img.youtube.com/vi/1sdPbJsYebA/0.jpg)](https://www.youtube.com/watch?v=1sdPbJsYebA)
+
 ## Run Tests
 
 Currently TODO.
