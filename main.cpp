@@ -2,15 +2,7 @@
 #include <pybind11/stl_bind.h>
 #include <pybind11/stl.h>
 
-#include "nr3.hpp"
-#include "linalg/linalg.hpp"
-#include "quaternion/quaternion.hpp"
-#include "sensors/sensors.hpp"
-#include "igrf/igrf.hpp"
-#include "kalmanfilter/ExtendedKalmanFilter.hpp"
-#include "kalmanfilter/UnscentedKalmanFilter.hpp"
-#include "models/ConstantPositionAccelMagQuat.hpp"
-#include "models/ConstantVelocityAccelGyroMagQuat.hpp"
+#include "kalmanfilters.hpp"
 
 // clang-format off
 #define STRINGIFY(x) #x
@@ -64,29 +56,6 @@ PYBIND11_MODULE(kalmanfilters, mod) {
     //     .def("predict", &cpekf::predict)
     //     .def("update", &cpekf::update<sensors::accel&>);
 
-    class GeomagModel {
-    public:
-        GeomagModel() : igrf(2023.0) {
-            igrf.get_field(lon_, lat_, alt_, mx_, my_, mz_);
-        }
-        void operator()(double &mx, double &my, double &mz) {
-            mx = mx_;
-            my = my_;
-            mz = mz_;
-        }
-        void setParameters(double lon, double lat, double alt) {
-            lon_ = lon;
-            lat_ = lat;
-            alt_ = alt;
-            igrf.get_field(lon_, lat_, alt_, mx_, my_, mz_);
-        }
-    private:
-        IGRF igrf;
-        double lon_, lat_, alt_;
-        double mx_, my_, mz_;
-    };
-
-    typedef ExtendedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel<GeomagModel>> cpqekf;
     py::class_<cpqekf>(mod, "cpqekf")
         .def(py::init<Vector, Matrix, double>())
         .def("setMotionParameters", &cpqekf::setMotionParameters<double>)
@@ -101,7 +70,6 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cpqekf::update<sensors::accel&>)
         .def("update", &cpqekf::update<sensors::mag&>);
 
-    typedef UnscentedKalmanFilter<ConstantPositionAccelMagQuatMotionModel, ConstantPositionAccelMagQuatMeasurementModel<GeomagModel>> cpqukf;
     py::class_<cpqukf>(mod, "cpqukf")
         .def(py::init<Vector, Matrix, double>())
         .def("setMotionParameters", &cpqukf::setMotionParameters<double>)
@@ -116,7 +84,6 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cpqukf::update<sensors::accel&>)
         .def("update", &cpqukf::update<sensors::mag&>);
 
-    typedef ExtendedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel<GeomagModel>> cvqekf;
     py::class_<cvqekf>(mod, "cvqekf")
         .def(py::init<Vector, Matrix, double>())
         .def("setMotionParameters", &cvqekf::setMotionParameters<double>)
@@ -132,7 +99,6 @@ PYBIND11_MODULE(kalmanfilters, mod) {
         .def("update", &cvqekf::update<sensors::gyro&>)
         .def("update", &cvqekf::update<sensors::mag&>);
 
-    typedef UnscentedKalmanFilter<ConstantVelocityAccelGyroMagQuatMotionModel, ConstantVelocityAccelGyroMagQuatMeasurementModel<GeomagModel>> cvqukf;
     py::class_<cvqukf>(mod, "cvqukf")
         .def(py::init<Vector, Matrix, double>())
         .def("setMotionParameters", &cvqukf::setMotionParameters<double>)

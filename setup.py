@@ -13,7 +13,6 @@ ext_modules = [
             "src/igrf/igrf.cpp",
             "main.cpp",
         ],
-        include_dirs=["src"],
         define_macros=[("VERSION_INFO", __version__)],
     ),
 ]
