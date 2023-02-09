@@ -1,15 +1,15 @@
 #ifndef _KALMANFILTERS_HPP_
 #define _KALMANFILTERS_HPP_
 
-#include "nr3.hpp"
-#include "linalg/linalg.hpp"
-#include "quaternion/quaternion.hpp"
-#include "sensors/sensors.hpp"
-#include "igrf/igrf.hpp"
-#include "kalmanfilter/ExtendedKalmanFilter.hpp"
-#include "kalmanfilter/UnscentedKalmanFilter.hpp"
-#include "models/ConstantPositionAccelMagQuat.hpp"
-#include "models/ConstantVelocityAccelGyroMagQuat.hpp"
+#include "src/nr3.hpp"
+#include "src/linalg/linalg.hpp"
+#include "src/quaternion/quaternion.hpp"
+#include "src/sensors/sensors.hpp"
+#include "src/igrf/igrf.hpp"
+#include "src/kalmanfilter/ExtendedKalmanFilter.hpp"
+#include "src/kalmanfilter/UnscentedKalmanFilter.hpp"
+#include "src/models/ConstantPositionAccelMagQuat.hpp"
+#include "src/models/ConstantVelocityAccelGyroMagQuat.hpp"
 
 class GeomagModel
 {
