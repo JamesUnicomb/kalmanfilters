@@ -2,7 +2,6 @@
 #include <Adafruit_LIS3MDL.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
-#include "kalmanfilters.h"
 
 #define ACCLDRDY 10
 #define GYRODRDY 11
