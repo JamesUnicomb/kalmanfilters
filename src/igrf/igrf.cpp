@@ -31,7 +31,7 @@ void IGRF::get_field(double lon, double lat, double alt, double& mx, double& my,
 		for(m = 0; m <= n; m++)
 		{
 			mx += (rn * P[m][n + 1]) * (g[n][m] * C[m] + h[n][m] * S[m]) * (RE / r);
-			my += (rn * m * P[n][m] * RE) * (g[n][m] * S[m] - h[n][m] * C[m]) / (r * sin(theta));
+			my += (rn * m * P[n][m] * RE) * (h[n][m] * C[m] - g[n][m] * S[m]) / (r * sin(theta));
 			mz += (rn * (RE / r) * (n + 1) * P[n][m]) * (g[n][m] * C[m] + h[n][m] * S[m]);
 		}
 
